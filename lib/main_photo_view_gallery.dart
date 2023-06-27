@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // PageController pageController = PageController();
 
   List<GalleryExampleItem> galleryItems = <GalleryExampleItem>[
-    GalleryExampleItem(id: "tag1", image: "assets/images/galaxy.jpg",),
+    GalleryExampleItem(id: "tag1", image: "assets/images/galaxy1.jpg",),
     GalleryExampleItem(id: "tag2", image: "assets/images/galaxy2.jpg",),
     GalleryExampleItem(id: "tag3", image: "assets/images/galaxy3.jpg",),
   ];

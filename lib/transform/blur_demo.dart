@@ -37,7 +37,7 @@ class _BlurDemoState extends State<BlurDemo> {
   @override
   Widget build(BuildContext context) {
     return MatrixGestureDetector(
-      onMatrixUpdate: (m, tm, sm, rm) => notifier!.value = m,
+      onMatrixUpdate: (state, m, tm, sm, rm) => notifier!.value = m,
       onScaleStart: () {  },
       onScaleEnd: () {  },
       child: CustomPaint(

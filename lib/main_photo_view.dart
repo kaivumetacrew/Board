@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       /// for simple photoview for zooming in & out
       body: PhotoView(
-        imageProvider: AssetImage("assets/images/galaxy.jpg"),
+        imageProvider: AssetImage("assets/images/galaxy1.jpg"),
         enableRotation: true,
       ),
     );

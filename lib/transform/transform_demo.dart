@@ -9,14 +9,14 @@ class TransformDemo extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey,
       appBar: AppBar(
-        title: Text('Transform Demo'),
+        title: Text('Transform Demo 0'),
       ),
       body: MatrixGestureDetector(
-        onMatrixUpdate: (m, tm, sm, rm) {
+        onMatrixUpdate: (state,m, tm, sm, rm) {
           notifier.value = m;
         },
-        onScaleStart: () {},
-        onScaleEnd: () {},
+        onScaleStart: () {  },
+        onScaleEnd: () {  },
         child: AnimatedBuilder(
           animation: notifier,
           builder: (ctx, child) {

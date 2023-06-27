@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 typedef MatrixGestureDetectorCallback = void Function(
+    MatrixGestureDetectorState state,
     Matrix4 matrix,
     Matrix4 translationDeltaMatrix,
     Matrix4 scaleDeltaMatrix,
@@ -62,8 +63,8 @@ class MatrixGestureDetector extends StatefulWidget {
   /// aligned relative to the size of this widget.
   final Alignment? focalPointAlignment;
 
-  final VoidCallback? onScaleStart;
-  final VoidCallback? onScaleEnd;
+  final VoidCallback onScaleStart;
+  final VoidCallback onScaleEnd;
 
   const MatrixGestureDetector({
     Key? key,
@@ -75,12 +76,12 @@ class MatrixGestureDetector extends StatefulWidget {
     this.clipChild = true,
     this.focalPointAlignment,
     this.behavior = HitTestBehavior.deferToChild,
-     this.onScaleStart,
-     this.onScaleEnd,
-  })  : super(key: key);
+    required this.onScaleStart,
+    required this.onScaleEnd,
+  }) : super(key: key);
 
   @override
-  _MatrixGestureDetectorState createState() => _MatrixGestureDetectorState();
+  MatrixGestureDetectorState createState() => MatrixGestureDetectorState();
 
   ///
   /// Compose the matrix from translation, scale and rotation matrices - you can
@@ -112,7 +113,7 @@ class MatrixGestureDetector extends StatefulWidget {
   }
 }
 
-class _MatrixGestureDetectorState extends State<MatrixGestureDetector> {
+class MatrixGestureDetectorState extends State<MatrixGestureDetector> {
   Matrix4 translationDeltaMatrix = Matrix4.identity();
   Matrix4 scaleDeltaMatrix = Matrix4.identity();
   Matrix4 rotationDeltaMatrix = Matrix4.identity();
@@ -121,7 +122,7 @@ class _MatrixGestureDetectorState extends State<MatrixGestureDetector> {
   @override
   Widget build(BuildContext context) {
     Widget child =
-    widget.clipChild ? ClipRect(child: widget.child) : widget.child;
+        widget.clipChild ? ClipRect(child: widget.child) : widget.child;
     return GestureDetector(
       behavior: widget.behavior,
       onScaleStart: onScaleStart,
@@ -145,7 +146,7 @@ class _MatrixGestureDetectorState extends State<MatrixGestureDetector> {
   );
 
   void onScaleStart(ScaleStartDetails details) {
-    widget.onScaleStart!();
+    widget.onScaleStart();
 
     translationUpdater.value = details.focalPoint;
     scaleUpdater.value = 1.0;
@@ -153,12 +154,12 @@ class _MatrixGestureDetectorState extends State<MatrixGestureDetector> {
   }
 
   void onScaleEnd(ScaleEndDetails details) {
-    widget.onScaleEnd!();
+    widget.onScaleEnd();
   }
 
   void onScaleUpdate(ScaleUpdateDetails details) {
-    widget.onScaleStart!(); // Why added onScaleUpdate? refer: https://github.com/pskink/matrix_gesture_detector/issues/5#issuecomment-553748004
-
+    widget
+        .onScaleStart(); // Why added onScaleUpdate? refer: https://github.com/pskink/matrix_gesture_detector/issues/5#issuecomment-553748004
     translationDeltaMatrix = Matrix4.identity();
     scaleDeltaMatrix = Matrix4.identity();
     rotationDeltaMatrix = Matrix4.identity();
@@ -171,9 +172,9 @@ class _MatrixGestureDetectorState extends State<MatrixGestureDetector> {
     }
 
     final focalPointAlignment = widget.focalPointAlignment;
-    final focalPoint = focalPointAlignment == null ?
-    details.localFocalPoint :
-    focalPointAlignment.alongSize(context.size!);
+    final focalPoint = focalPointAlignment == null
+        ? details.localFocalPoint
+        : focalPointAlignment.alongSize(context.size!);
 
     // handle matrix scaling
     if (widget.shouldScale && details.scale != 1.0) {
@@ -190,7 +191,12 @@ class _MatrixGestureDetectorState extends State<MatrixGestureDetector> {
     }
 
     widget.onMatrixUpdate(
-        matrix, translationDeltaMatrix, scaleDeltaMatrix, rotationDeltaMatrix);
+      this,
+      matrix,
+      translationDeltaMatrix,
+      scaleDeltaMatrix,
+      rotationDeltaMatrix,
+    );
   }
 
   Matrix4 _translate(Offset translation) {
@@ -234,6 +240,13 @@ class _MatrixGestureDetectorState extends State<MatrixGestureDetector> {
     //  ..[13] = dy      # y translation
     //  ..[15] = 1       # diagonal "one"
     return Matrix4(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, dx, dy, 0, 1);
+  }
+
+  void reset() {
+    translationDeltaMatrix = Matrix4.identity();
+    scaleDeltaMatrix = Matrix4.identity();
+    rotationDeltaMatrix = Matrix4.identity();
+    matrix = Matrix4.identity();
   }
 }
 

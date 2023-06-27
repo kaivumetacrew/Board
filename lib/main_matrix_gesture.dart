@@ -61,6 +61,43 @@ void main() => runApp(MaterialApp(
       ),
     ));
 
+
+ class DemoPage extends StatefulWidget {
+   const DemoPage({super.key});
+
+   @override
+   State<DemoPage> createState() => _DemoPageState();
+ }
+
+ class _DemoPageState extends State<DemoPage> {
+   @override
+   Widget build(BuildContext context) {
+     return Scaffold(
+       appBar: AppBar(
+         title: Text('MatrixGestureDetector Demo'),
+       ),
+       body: Builder(
+         builder: (BuildContext ctx) {
+           return Center(
+             child: SingleChildScrollView(
+               child: Column(
+                 children: demos
+                     .map((demo) => ListTile(
+                   onTap: () => showDemo(ctx, demo),
+                   leading: Icon(Icons.image),
+                   title: Text(demo.title),
+                   subtitle: Text(demo.subtitle),
+                 ))
+                     .toList(),
+               ),
+             ),
+           );
+         },
+       ),
+     );
+   }
+ }
+
 showDemo(BuildContext ctx, Demo demo) {
   print('showing ${demo.title}...');
   Navigator.of(ctx).push(MaterialPageRoute(builder: (ctx) => demo.widget));

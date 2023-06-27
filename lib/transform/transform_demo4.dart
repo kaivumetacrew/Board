@@ -116,7 +116,7 @@ class TransformDemo4State extends State<TransformDemo4>
           child: Padding(
             padding: const EdgeInsets.all(32.0),
             child: MatrixGestureDetector(
-              onMatrixUpdate: (m, tm, sm, rm) {
+              onMatrixUpdate: (state,m, tm, sm, rm) {
                 notifier.value = m;
               },
               shouldTranslate: false,

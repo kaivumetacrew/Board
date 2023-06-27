@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../util/gesture_detector.dart';
 import 'board_widget.dart';
+import 'package:flutter/foundation.dart';
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
@@ -12,7 +13,8 @@ class BoardPage extends StatefulWidget {
 }
 
 class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
-  final List<Widget> _items = [];
+  final List<BoardItem> _boardItems = [];
+  List<Widget> _boardWidgets = [];
 
   double boardWidth = 0;
   double boardHeight = 0;
@@ -22,7 +24,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   late AnimationController controller;
   late Animation<Alignment> focalPointAnimation;
   Alignment focalPoint = Alignment.center;
-  ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
+  var currentItemIndex = 0;
+  Widget gestureDetectorWidget = Container();
 
   @override
   void initState() {
@@ -43,47 +46,158 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     boardWidth = screenSize.width;
     boardHeight = boardWidth * boardRatio;
     return Container(
-        color: Colors.black,
         child: Scaffold(
-          body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                color: Colors.amber,
+                child: Center(
                   child: Container(
-                    width: double.infinity,
-                    color: Colors.black,
-                    child: Center(
-                      child: Container(
-                        color: Colors.white,
-                        child: AspectRatio(
-                          aspectRatio: 1 / boardRatio,
-                          child: Stack(
-                            children: _items,
-                          ),
+                    color: Colors.white,
+                    child: AspectRatio(
+                      aspectRatio: 1 / boardRatio,
+                      child: MatrixGestureDetector(
+                        onScaleStart: () {},
+                        onScaleEnd: () {},
+                        onMatrixUpdate: (
+                          state,
+                          matrix,
+                          translationDeltaMatrix,
+                          scaleDeltaMatrix,
+                          rotationDeltaMatrix,
+                        ) {
+                          for (BoardItem e in _boardItems) {
+                            if (e.isAnimated) {
+                              if (e.isFirst) {
+                                e.isFirst = false;
+                                state.reset();
+                                break;
+                              }
+                              e.notifier.value = matrix;
+                              break;
+                            }
+                          }
+                        },
+                        child: Stack(
+                          children: _boardWidgets,
                         ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 80,
-                  child: Row(
-                    children: [
-                      _toolbarButton(Icons.abc, 'Text', () {}),
-                      _toolbarButton(Icons.image, 'Image', () {
-                        _addImage();
-                      }),
-                      _toolbarButton(Icons.emoji_emotions, 'Sticker', () {
-                        _addSticker();
-                      }),
-                      _toolbarButton(Icons.draw, 'Draw', () {}),
-                    ],
-                  ),
-                )
-              ],
+              ),
             ),
-          ),
-        ));
+            _toolbar()
+          ],
+        ),
+      ),
+    ));
+  }
+
+  void addImage(String path) {
+    int index = _boardItems.length;
+    for (BoardItem e in _boardItems) {
+      e.isFirst = false;
+      e.isAnimated = false;
+    }
+    var item = BoardItem(
+      index,
+      isAnimated: true,
+      assetPath: path,
+    );
+    _boardItems.add(item);
+    debugPrint('boardWidgets before: ${printBoardItems()}');
+    setState(() {
+      _boardWidgets = mapBoardWidgets(_boardItems);
+      debugPrint('boardWidgets after: ${printBoardItems()}');
+    });
+  }
+
+  List<Widget> mapBoardWidgets(List<BoardItem> items) {
+    // var x = boardWidth / 2 - 100 / 2;
+    // var y = boardHeight / 2 - 100 / 2;
+    // var positionedWidget = Positioned(
+    //     left: x,
+    //     top: y,
+    //     child: animatedImageWidget(BoardItem(index, assetPath, widget),
+    //     );
+    return items.map((e) {
+      if (e.assetPath != null) {
+        if (e.isAnimated) {
+          return animatedImageWidget(e);
+        }
+        return positionedImageWidget(e);
+      }
+      return const Text('error item');
+    }).toList();
+  }
+
+  Widget positionedImageWidget(BoardItem item) {
+    return Transform(
+      transform: item.notifier.value,
+      child: imageWidget(item),
+    );
+  }
+
+  Widget animatedImageWidget(BoardItem item) {
+    return AnimatedBuilder(
+      animation: item.notifier,
+      builder: (ctx, child) {
+        return Transform(
+          transform: item.notifier.value,
+          child: imageWidget(item),
+        );
+      },
+    );
+  }
+
+  Widget imageWidget(BoardItem item) {
+    return GestureDetector(
+      child: Image.asset(
+        Asset.imagePath(item.assetPath!!),
+        width: defaultSize,
+        height: defaultSize,
+        fit: BoxFit.cover,
+      ),
+      onTapDown: (detail) {
+        currentItemIndex = item.index;
+        debugPrint('tap item ${item.index}');
+      },
+    );
+  }
+
+  String printBoardItems() {
+    String s = '';
+    for (BoardItem e in _boardItems) {
+      s += ' Item (index: ${e.index}, isAnimated: ${e.isAnimated}),';
+    }
+    return s;
+  }
+
+  /**
+   * Bottom toolbar
+   */
+  Widget _toolbar() {
+    return SizedBox(
+      height: 80,
+      child: Row(
+        children: [
+          _toolbarButton(Icons.abc, 'Text', () {}),
+          _toolbarButton(Icons.image, 'Image', () {
+            addImage('galaxy1.jpg');
+          }),
+          _toolbarButton(Icons.emoji_emotions, 'Sticker', () {
+            addImage('galaxy2.jpg');
+          }),
+          _toolbarButton(Icons.draw, 'Draw', () {
+            addImage('galaxy3.jpg');
+          }),
+        ],
+      ),
+    );
   }
 
   Widget _toolbarButton(
@@ -112,65 +226,5 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  void _addText(String label) {}
-
-  void _addImage() {
-    _addItem(
-      defaultSize,
-      defaultSize,
-      Image.asset(
-        Asset.imagePath("galaxy.jpg"),
-        width: defaultSize,
-        height: defaultSize,
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-
-  void _addSticker() {
-    _addItem(
-      100,
-      100,
-      Container(
-        width: 100,
-        height: 100,
-        color: Colors.red,
-      ),
-    );
-  }
-
-  void _addItem(
-    double width,
-    double height,
-    Widget widget,
-  ) {
-    var x = boardWidth / 2 - width / 2;
-    var y = boardHeight / 2 - height / 2;
-    // var positionedWidget = Positioned(
-    //   left: x,
-    //   top: y,
-    //   child: widget,
-    // );
-    var transformWidget = MatrixGestureDetector(
-      onMatrixUpdate: (m, tm, sm, rm) {
-        notifier.value = m;
-      },
-      focalPointAlignment: focalPoint,
-      child: CustomPaint(
-        foregroundPainter: FocalPointPainter(focalPointAnimation),
-        child: AnimatedBuilder(
-          animation: notifier,
-          builder: (ctx, child) => Transform(
-            transform: notifier.value,
-            child: widget,
-          ),
-        ),
-      ),
-    );
-    setState(() {
-      _items.add(transformWidget);
-    });
   }
 }

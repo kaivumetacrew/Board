@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../util/gesture_detector.dart';
+
 typedef void OnWidgetSizeChange(Size size);
 
 class MeasureSizeRenderObject extends RenderProxyBox {
@@ -86,4 +88,35 @@ class FocalPointPainter extends CustomPainter {
   }
 }
 
+class BoardItem {
+  int index;
+  String? assetPath = null;
+  String? text = null;
+  bool isAnimated = false;
+  bool isFirst = true;
+  ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
 
+  MatrixGestureDetector getGestureDetector(List<Widget> boardWidgets) {
+    return MatrixGestureDetector(
+        shouldRotate: false,
+        shouldScale: false,
+        onScaleStart: () {},
+        onScaleEnd: () {},
+        onMatrixUpdate: (
+            state,
+          matrix,
+          translationDeltaMatrix,
+          scaleDeltaMatrix,
+          rotationDeltaMatrix,
+        ) {
+          if (isAnimated) {
+            notifier.value = matrix;
+          }
+        },
+        child: Stack(
+          children: boardWidgets,
+        ));
+  }
+
+  BoardItem(this.index, {required this.isAnimated, this.assetPath, this.text});
+}

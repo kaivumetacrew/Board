@@ -37,7 +37,7 @@ class _TransformDemo2State extends State<TransformDemo2> {
               Rect.fromLTWH(0, 0, width, height));
           return MatrixGestureDetector(
             shouldRotate: false,
-            onMatrixUpdate: (m, tm, sm, rm) {
+            onMatrixUpdate: (state,m, tm, sm, rm) {
               matrix = MatrixGestureDetector.compose(matrix!, tm, sm, null);
               boxer.clamp(matrix!);
               notifier.value = matrix;
