@@ -48,51 +48,53 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     boardWidth = screenSize.width;
     boardHeight = boardWidth * boardRatio;
     return Container(
-        child: Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: Colors.amber,
-                child: Center(
-                  child: Container(
-                    color: Colors.white,
-                    child: AspectRatio(
-                      aspectRatio: 1 / boardRatio,
-                      child: MatrixGestureDetector(
-                        onScaleStart: () {},
-                        onScaleEnd: () {},
-                        onMatrixUpdate: (
-                          state,
-                          matrix,
-                          translationDeltaMatrix,
-                          scaleDeltaMatrix,
-                          rotationDeltaMatrix,
-                        ) {
-                          if (currentItem != null) {
-                            if (currentItem!.id != state.id) {
-                              state.id = currentItem!.id!;
-                              state.reset();
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  color: Colors.amber,
+                  child: Center(
+                    child: Container(
+                      color: Colors.white,
+                      child: AspectRatio(
+                        aspectRatio: 1 / boardRatio,
+                        child: MatrixGestureDetector(
+                          onScaleStart: () {},
+                          onScaleEnd: () {},
+                          onMatrixUpdate: (
+                            state,
+                            matrix,
+                            translationDeltaMatrix,
+                            scaleDeltaMatrix,
+                            rotationDeltaMatrix,
+                          ) {
+                            if (currentItem != null) {
+                              if (currentItem!.id != state.id) {
+                                state.id = currentItem!.id!;
+                                state.reset();
+                                return;
+                              }
+                              currentItem?.notifier.value = matrix;
                             }
-                            currentItem?.notifier.value = matrix;
-                          }
-                        },
-                        child: Stack(
-                          children: _boardWidgets,
+                          },
+                          child: Stack(
+                            children: _boardWidgets,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            _toolbar()
-          ],
+              _toolbar()
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 
   void addImage(String path) {
