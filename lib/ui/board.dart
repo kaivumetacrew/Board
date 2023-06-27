@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class BoardPage extends StatefulWidget {
@@ -12,15 +13,16 @@ class BoardPage extends StatefulWidget {
 class _BoardPageState extends State<BoardPage> {
   List<Widget> _items = [];
 
+  Size _screenSize = Size.zero;
+  double boardWidth = 0;
+  double boardHeight = 0;
+  double boardRatio = 4 / 3;
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-
+    _screenSize = MediaQuery.of(context).size;
+    boardWidth = _screenSize.width;
+    boardHeight = boardWidth * boardRatio;
     return Container(
         color: Colors.black,
         child: Scaffold(
@@ -29,19 +31,18 @@ class _BoardPageState extends State<BoardPage> {
               children: [
                 Expanded(
                   child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: Colors.amber,
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          color: Colors.black,
+                      width: double.infinity,
+                      color: Colors.black,
+                      child: Center(
+                          child: Container(
+                        color: Colors.white,
+                        child: AspectRatio(
+                          aspectRatio: 1 / boardRatio,
+                          child: Stack(
+                            children: _items,
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ))),
                 ),
                 SizedBox(
                   height: 80,
@@ -93,18 +94,31 @@ class _BoardPageState extends State<BoardPage> {
   void _addText(String label) {}
 
   void _addImage() {
-    setState(() {
-      _items.add(Container(
+    _addItem(
+      100,
+      100,
+      Container(
         width: 100,
         height: 100,
         color: Colors.black,
-      ));
-    });
+      ),
+    );
   }
 
-  void _addItem(Widget widget) {
+  void _addItem(
+    double width,
+    double height,
+    Widget widget,
+  ) {
+    var x = boardWidth / 2 - width / 2;
+    var y = boardHeight / 2 - height / 2;
+    var positionedWidget = Positioned(
+      left: x,
+      top: y,
+      child: widget,
+    );
     setState(() {
-      _items.add(widget);
+      _items.add(positionedWidget);
     });
   }
 }
