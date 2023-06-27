@@ -1,7 +1,8 @@
-import 'package:flutter/cupertino.dart';
+import 'package:board/util/asset.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../util/gesture_detector.dart';
+import 'board_widget.dart';
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
@@ -10,18 +11,36 @@ class BoardPage extends StatefulWidget {
   State<BoardPage> createState() => _BoardPageState();
 }
 
-class _BoardPageState extends State<BoardPage> {
-  List<Widget> _items = [];
+class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
+  final List<Widget> _items = [];
 
-  Size _screenSize = Size.zero;
   double boardWidth = 0;
   double boardHeight = 0;
   double boardRatio = 4 / 3;
+  double defaultSize = 120;
+
+  late AnimationController controller;
+  late Animation<Alignment> focalPointAnimation;
+  Alignment focalPoint = Alignment.center;
+  ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    focalPointAnimation = controller.drive(
+      AlignmentTween(begin: focalPoint, end: focalPoint),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    _screenSize = MediaQuery.of(context).size;
-    boardWidth = _screenSize.width;
+    Size screenSize = MediaQuery.of(context).size;
+    boardWidth = screenSize.width;
     boardHeight = boardWidth * boardRatio;
     return Container(
         color: Colors.black,
@@ -31,10 +50,10 @@ class _BoardPageState extends State<BoardPage> {
               children: [
                 Expanded(
                   child: Container(
-                      width: double.infinity,
-                      color: Colors.black,
-                      child: Center(
-                          child: Container(
+                    width: double.infinity,
+                    color: Colors.black,
+                    child: Center(
+                      child: Container(
                         color: Colors.white,
                         child: AspectRatio(
                           aspectRatio: 1 / boardRatio,
@@ -42,7 +61,9 @@ class _BoardPageState extends State<BoardPage> {
                             children: _items,
                           ),
                         ),
-                      ))),
+                      ),
+                    ),
+                  ),
                 ),
                 SizedBox(
                   height: 80,
@@ -52,7 +73,9 @@ class _BoardPageState extends State<BoardPage> {
                       _toolbarButton(Icons.image, 'Image', () {
                         _addImage();
                       }),
-                      _toolbarButton(Icons.emoji_emotions, 'Sticker', () {}),
+                      _toolbarButton(Icons.emoji_emotions, 'Sticker', () {
+                        _addSticker();
+                      }),
                       _toolbarButton(Icons.draw, 'Draw', () {}),
                     ],
                   ),
@@ -95,12 +118,25 @@ class _BoardPageState extends State<BoardPage> {
 
   void _addImage() {
     _addItem(
+      defaultSize,
+      defaultSize,
+      Image.asset(
+        Asset.imagePath("galaxy.jpg"),
+        width: defaultSize,
+        height: defaultSize,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  void _addSticker() {
+    _addItem(
       100,
       100,
       Container(
         width: 100,
         height: 100,
-        color: Colors.black,
+        color: Colors.red,
       ),
     );
   }
@@ -112,13 +148,29 @@ class _BoardPageState extends State<BoardPage> {
   ) {
     var x = boardWidth / 2 - width / 2;
     var y = boardHeight / 2 - height / 2;
-    var positionedWidget = Positioned(
-      left: x,
-      top: y,
-      child: widget,
+    // var positionedWidget = Positioned(
+    //   left: x,
+    //   top: y,
+    //   child: widget,
+    // );
+    var transformWidget = MatrixGestureDetector(
+      onMatrixUpdate: (m, tm, sm, rm) {
+        notifier.value = m;
+      },
+      focalPointAlignment: focalPoint,
+      child: CustomPaint(
+        foregroundPainter: FocalPointPainter(focalPointAnimation),
+        child: AnimatedBuilder(
+          animation: notifier,
+          builder: (ctx, child) => Transform(
+            transform: notifier.value,
+            child: widget,
+          ),
+        ),
+      ),
     );
     setState(() {
-      _items.add(positionedWidget);
+      _items.add(transformWidget);
     });
   }
 }
