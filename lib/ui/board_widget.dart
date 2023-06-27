@@ -89,34 +89,20 @@ class FocalPointPainter extends CustomPainter {
 }
 
 class BoardItem {
-  int index;
+  int id;
   String? assetPath = null;
   String? text = null;
-  bool isAnimated = false;
-  bool isFirst = true;
   ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
 
-  MatrixGestureDetector getGestureDetector(List<Widget> boardWidgets) {
-    return MatrixGestureDetector(
-        shouldRotate: false,
-        shouldScale: false,
-        onScaleStart: () {},
-        onScaleEnd: () {},
-        onMatrixUpdate: (
-            state,
-          matrix,
-          translationDeltaMatrix,
-          scaleDeltaMatrix,
-          rotationDeltaMatrix,
-        ) {
-          if (isAnimated) {
-            notifier.value = matrix;
-          }
-        },
-        child: Stack(
-          children: boardWidgets,
-        ));
-  }
+  Matrix4 translationDeltaMatrix = Matrix4.identity();
+  Matrix4 scaleDeltaMatrix = Matrix4.identity();
+  Matrix4 rotationDeltaMatrix = Matrix4.identity();
+  Matrix4 matrix = Matrix4.identity();
 
-  BoardItem(this.index, {required this.isAnimated, this.assetPath, this.text});
+  BoardItem(this.id, {this.assetPath, this.text});
+
+  bool equal(BoardItem? item){
+    if(item == null) return false;
+    return id == item.id;
+  }
 }

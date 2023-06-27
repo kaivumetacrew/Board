@@ -118,6 +118,7 @@ class MatrixGestureDetectorState extends State<MatrixGestureDetector> {
   Matrix4 scaleDeltaMatrix = Matrix4.identity();
   Matrix4 rotationDeltaMatrix = Matrix4.identity();
   Matrix4 matrix = Matrix4.identity();
+  int id = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +249,12 @@ class MatrixGestureDetectorState extends State<MatrixGestureDetector> {
     rotationDeltaMatrix = Matrix4.identity();
     matrix = Matrix4.identity();
   }
+
+  void update(Matrix4 matrix){
+    this.matrix = matrix;
+  }
 }
+
 
 typedef _OnUpdate<T> = T Function(T oldValue, T newValue);
 

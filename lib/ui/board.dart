@@ -27,6 +27,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   var currentItemIndex = 0;
   Widget gestureDetectorWidget = Container();
 
+  BoardItem? currentItem = null;
+
   @override
   void initState() {
     super.initState();
@@ -69,16 +71,12 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                           scaleDeltaMatrix,
                           rotationDeltaMatrix,
                         ) {
-                          for (BoardItem e in _boardItems) {
-                            if (e.isAnimated) {
-                              if (e.isFirst) {
-                                e.isFirst = false;
-                                state.reset();
-                                break;
-                              }
-                              e.notifier.value = matrix;
-                              break;
+                          if (currentItem != null) {
+                            if (currentItem!.id != state.id) {
+                              state.id = currentItem!.id!;
+                              state.reset();
                             }
+                            currentItem?.notifier.value = matrix;
                           }
                         },
                         child: Stack(
@@ -99,34 +97,21 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   void addImage(String path) {
     int index = _boardItems.length;
-    for (BoardItem e in _boardItems) {
-      e.isFirst = false;
-      e.isAnimated = false;
-    }
     var item = BoardItem(
       index,
-      isAnimated: true,
       assetPath: path,
     );
+    currentItem = item;
     _boardItems.add(item);
-    debugPrint('boardWidgets before: ${printBoardItems()}');
     setState(() {
       _boardWidgets = mapBoardWidgets(_boardItems);
-      debugPrint('boardWidgets after: ${printBoardItems()}');
     });
   }
 
   List<Widget> mapBoardWidgets(List<BoardItem> items) {
-    // var x = boardWidth / 2 - 100 / 2;
-    // var y = boardHeight / 2 - 100 / 2;
-    // var positionedWidget = Positioned(
-    //     left: x,
-    //     top: y,
-    //     child: animatedImageWidget(BoardItem(index, assetPath, widget),
-    //     );
     return items.map((e) {
       if (e.assetPath != null) {
-        if (e.isAnimated) {
+        if (e.equal(currentItem)) {
           return animatedImageWidget(e);
         }
         return positionedImageWidget(e);
@@ -163,18 +148,13 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         fit: BoxFit.cover,
       ),
       onTapDown: (detail) {
-        currentItemIndex = item.index;
-        debugPrint('tap item ${item.index}');
+        currentItem = item;
+        setState(() {
+          _boardWidgets = mapBoardWidgets(_boardItems);
+        });
+        debugPrint('tap item ${item.id}');
       },
     );
-  }
-
-  String printBoardItems() {
-    String s = '';
-    for (BoardItem e in _boardItems) {
-      s += ' Item (index: ${e.index}, isAnimated: ${e.isAnimated}),';
-    }
-    return s;
   }
 
   /**
