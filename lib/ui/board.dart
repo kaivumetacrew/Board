@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../util/gesture_detector.dart';
-import 'board_widget.dart';
 
 class BoardPage extends StatefulWidget {
   const BoardPage({super.key});
