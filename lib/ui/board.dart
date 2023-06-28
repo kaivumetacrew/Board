@@ -71,14 +71,17 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                             scaleDeltaMatrix,
                             rotationDeltaMatrix,
                           ) {
-                            if (currentItem != null) {
-                              if (currentItem!.id != state.id) {
-                                state.id = currentItem!.id!;
-                                state.reset();
-                                return;
-                              }
-                              currentItem?.notifier.value = matrix;
+                            if (currentItem == null) {
+                              return;
                             }
+                            if (currentItem!.id != state.id) {
+                              state.id = currentItem!.id!;
+                              //state.reset();
+                              state.update(currentItem!.matrix);
+                              return;
+                            }
+                            currentItem?.matrix = matrix;
+                            currentItem?.notifier.value = matrix;
                           },
                           child: Stack(
                             children: _boardWidgets,
@@ -149,12 +152,17 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         height: defaultSize,
         fit: BoxFit.cover,
       ),
+      onTapUp: (detail){
+        currentItem = null;
+        setState(() {
+        });
+      },
       onTapDown: (detail) {
         currentItem = item;
         setState(() {
           _boardWidgets = mapBoardWidgets(_boardItems);
         });
-        debugPrint('tap item ${item.id}');
+        debugPrint('onTapDown item ${item.id}');
       },
     );
   }
