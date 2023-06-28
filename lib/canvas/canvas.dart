@@ -233,7 +233,9 @@ class _CanvasPaintingState extends State<CanvasPainting> {
               });
             },
             onPanStart: (details) {
+              debugPrint('onPanStart, points size: ${points.length}');
               setState(() {
+
                 RenderBox renderBox = context.findRenderObject()! as RenderBox;
                 points.add(TouchPoints(
                     points: renderBox.globalToLocal(details.globalPosition),
@@ -245,8 +247,10 @@ class _CanvasPaintingState extends State<CanvasPainting> {
               });
             },
             onPanEnd: (details) {
+              debugPrint('onPanEnd, points size: ${points.length}');
               setState(() {
                 points.add(null);
+
               });
             },
             child: RepaintBoundary(

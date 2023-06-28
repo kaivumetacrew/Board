@@ -82,7 +82,12 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                               _selectedItem.notifier.value = matrix;
                             },
                             child: Stack(
-                              children: _boardWidgets,
+                              children: [
+                                Stack(
+                                  children: _boardWidgets,
+                                ),
+                                actionDrawWidget(),
+                              ],
                             ),
                           ),
                         ),
@@ -183,6 +188,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         }
         return positionedImageWidget(e);
       }
+      if (e.points.isNotEmpty) {
+        return paintWidget(e.points);
+      }
       return const Text('error item');
     }).toList();
     return list;
@@ -262,6 +270,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       onTapUp: (detail) {},
       onTap: () {
         setState(() {
+          debugPrint("onTap ${item.id}");
           item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
           _currentAction = ActionItem.imageItem;
           _selectedItem = item;
@@ -282,11 +291,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         imageQuality: 100,
       );
       setState(() {
-        int index = _boardItems.length;
         var item = BoardItem(
-          index,
+          _boardItems.length,
           file: File(pickedFile!.path!),
         );
+        item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
         _selectedItem = item;
         _boardItems.add(item);
         setState(() {
@@ -312,7 +321,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
             IconButton(
                 icon: const Icon(Icons.undo),
                 onPressed: () {
-                  //TODO: undo
+                 var item = _boardItems.reversed.firstWhere((element) => element.points.isNotEmpty);
+                 _boardItems.removeWhere((element) => element.id == item.id);
+                  setState(() {
+                    _boardWidgets = mapBoardWidgets(_boardItems);
+                  });
                 }),
           ],
         ),
@@ -348,9 +361,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget drawWidget() {
-    var repaintWidget = RepaintBoundary(
-      key: globalKey,
+  Widget paintWidget(List<TouchPoints?> points) {
+    return RepaintBoundary(
       child: Stack(
         children: <Widget>[
           CustomPaint(
@@ -362,8 +374,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         ],
       ),
     );
+  }
+
+  Widget actionDrawWidget() {
     if (_currentAction != ActionItem.drawItem) {
-      return repaintWidget;
+      return const SizedBox(width: 0.0, height: 0.0);
     }
     return GestureDetector(
       onPanUpdate: (details) {
@@ -393,12 +408,17 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       onPanEnd: (details) {
         setState(() {
           points.add(null);
+          var item = BoardItem(_boardItems.length);
+          item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
+          item.points = points;
+          points = [];
+          _boardItems.add(item);
+          _boardWidgets = mapBoardWidgets(_boardItems);
         });
       },
-      child: repaintWidget,
+      child: paintWidget(points),
     );
   }
-
 
 }
 
@@ -412,6 +432,7 @@ class BoardItem {
   bool isLockScale = true;
   bool isLockMove = true;
   int lastUpdate = 0;
+  List<TouchPoints?> points = [];
 
   //Matrix4 translationDeltaMatrix = Matrix4.identity();
   //Matrix4 scaleDeltaMatrix = Matrix4.identity();
