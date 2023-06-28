@@ -1,3 +1,4 @@
+import 'package:board/res/color.dart';
 import 'package:board/ui/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
+
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -35,7 +37,12 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         //useMaterial3: true,
         //scaffoldBackgroundColor: Colors.white,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        appBarTheme: const AppBarTheme(
+          iconTheme: IconThemeData(color: Colors.white),
+          color: Colors.blue, //<-- SEE HERE
+        ),
       ),
       home: const MenuPage(),
     );

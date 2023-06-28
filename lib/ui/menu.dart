@@ -1,6 +1,8 @@
 import 'package:board/ui/board.dart';
 import 'package:flutter/material.dart';
+
 import '../canvas/canvas.dart';
+import '../res/color.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -13,6 +15,8 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Text("Menu")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -21,7 +25,7 @@ class _MenuPageState extends State<MenuPage> {
               push(const BoardPage());
             }),
             menuButton("Canvas", () {
-              push( CanvasPainting());
+              push(CanvasPainting());
             }),
             menuButton('My boards', () {}),
           ],
@@ -31,12 +35,15 @@ class _MenuPageState extends State<MenuPage> {
   }
 
   Widget menuButton(String label, VoidCallback onPress) {
-    return TextButton(
-      style: ButtonStyle(
-        foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+    return Padding(
+      padding: EdgeInsets.only(bottom: 32),
+      child: TextButton(
+        style: ButtonStyle(
+          foregroundColor: MaterialStateProperty.all<Color>(ColorRes.text),
+        ),
+        onPressed: onPress,
+        child: Text(label, style: TextStyle(fontSize: 24)),
       ),
-      onPressed: onPress,
-      child: Text(label),
     );
   }
 

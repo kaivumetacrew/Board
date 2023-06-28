@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:board/res/color.dart';
+import 'package:board/ui/board_text.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -47,7 +49,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     boardWidth = screenSize.width;
     boardHeight = boardWidth * boardRatio;
     return Scaffold(
-      backgroundColor: Colors.white70,
+      backgroundColor: Colors.white,
+      appBar:  AppBar(title: const Text("Board")),
       body: SafeArea(
         child: Column(
           children: [
@@ -95,6 +98,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
+                  Container(width: double.infinity, height: 1, color: ColorRes.text),
                   Expanded(
                       child: Container(
                         width: double.infinity,
@@ -104,6 +108,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                 ],
               ),
             ),
+            Container(width: double.infinity, height: 1, color: ColorRes.text),
             _actionBar()
           ],
         ),
@@ -116,7 +121,14 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
    */
   Widget _actionBar() {
     List<Widget> list = [];
-    list.add(_actionButton(ActionItem.textItem, (isSelected) {}));
+    list.add(_actionButton(ActionItem.textItem, (isSelected) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const TextPage(),
+          fullscreenDialog: true,
+        ),
+      );
+    }));
     list.add(_actionButton(ActionItem.imageItem, (isSelected) {
       _pickImage();
     }));
@@ -140,7 +152,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     ActionItem item,
     Function(bool isSelected) callback,
   ) {
-    Color iconColor = (_currentAction == item) ? Colors.blue : Colors.black;
+    Color iconColor = (_currentAction == item) ? ColorRes.primary : ColorRes.lightGray;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -166,8 +178,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
           ),
           Text(
             item.text,
-            style: const TextStyle(
-              color: Colors.black,
+            style:  TextStyle(
+              color: iconColor,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
