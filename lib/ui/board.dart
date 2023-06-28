@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../util/finger_draw.dart';
 import '../util/gesture_detector.dart';
 
 class BoardPage extends StatefulWidget {
@@ -18,26 +19,24 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   double boardWidth = 0;
   double boardHeight = 0;
   double boardRatio = 4 / 3;
-  double defaultSize = 120;
-  late AnimationController controller;
-  late Animation<Alignment> focalPointAnimation;
   Alignment focalPoint = Alignment.center;
-  var currentItemIndex = 0;
-  Widget gestureDetectorWidget = Container();
+  late AnimationController controller;
+  BoardItem _selectedItem = BoardItem.none;
+  ActionItem _currentAction = ActionItem.none;
 
-  BoardItem? _selectedItem;
-  ToolbarItem? _currentTool;
+  GlobalKey globalKey = GlobalKey();
+  List<TouchPoints?> points = [];
+  double opacity = 1.0;
+  StrokeCap strokeType = StrokeCap.round;
+  double strokeWidth = 3.0;
+  Color selectedColor = Colors.black;
 
   @override
   void initState() {
     super.initState();
-
     controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
-    );
-    focalPointAnimation = controller.drive(
-      AlignmentTween(begin: focalPoint, end: focalPoint),
     );
   }
 
@@ -46,66 +45,138 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     Size screenSize = MediaQuery.of(context).size;
     boardWidth = screenSize.width;
     boardHeight = boardWidth * boardRatio;
-    return Container(
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      color: Colors.black,
-                      child: Center(
-                        child: Container(
-                          color: Colors.white,
-                          child: AspectRatio(
-                            aspectRatio: 1 / boardRatio,
-                            child: MatrixGestureDetector(
-                              onScaleStart: () {},
-                              onScaleEnd: () {},
-                              onMatrixUpdate: (
-                                state,
-                                matrix,
-                                translationDeltaMatrix,
-                                scaleDeltaMatrix,
-                                rotationDeltaMatrix,
-                              ) {
-                                if (_selectedItem == null) {
-                                  return;
-                                }
-                                if (_selectedItem!.id != state.id) {
-                                  state.id = _selectedItem!.id!;
-                                  //state.reset();
-                                  state.update(_selectedItem!.matrix);
-                                  return;
-                                }
-                                _selectedItem?.matrix = matrix;
-                                _selectedItem?.notifier.value = matrix;
-                              },
-                              child: Stack(
-                                children: _boardWidgets,
-                              ),
+    return Scaffold(
+      backgroundColor: Colors.white70,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: Center(
+                      child: Container(
+                        color: Colors.white,
+                        child: AspectRatio(
+                          aspectRatio: 1 / boardRatio,
+                          child: MatrixGestureDetector(
+                            onScaleStart: () {},
+                            onScaleEnd: () {},
+                            onMatrixUpdate: (
+                              state,
+                              matrix,
+                              translationDeltaMatrix,
+                              scaleDeltaMatrix,
+                              rotationDeltaMatrix,
+                            ) {
+                              if (_selectedItem == BoardItem.none) {
+                                return;
+                              }
+                              if (_selectedItem.id != state.id) {
+                                state.id = _selectedItem.id;
+                                state.update(_selectedItem.matrix);
+                                return;
+                              }
+                              _selectedItem.matrix = matrix;
+                              _selectedItem.notifier.value = matrix;
+                            },
+                            child: Stack(
+                              children: _boardWidgets,
                             ),
                           ),
                         ),
                       ),
-                    )
-                  ],
-                ),
+                    ),
+                  ),
+                  Expanded(
+                      child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8.0),
+                    child: drawToolWidget(),
+                  )),
+                ],
               ),
-              _toolbar()
-            ],
-          ),
+            ),
+            _actionBar()
+          ],
         ),
       ),
     );
   }
 
+  /**
+   * Bottom toolbar
+   */
+  Widget _actionBar() {
+    List<Widget> list = [];
+    list.add(_actionButton(ActionItem.textItem, (isSelected) {}));
+    list.add(_actionButton(ActionItem.imageItem, (isSelected) {
+      _pickImage();
+    }));
+    list.add(_actionButton(ActionItem.stickerItem, (isSelected) {}));
+    list.add(_actionButton(ActionItem.drawItem, (isSelected) {
+      if (isSelected) {
+        _selectedItem = BoardItem.none;
+        _boardWidgets = mapBoardWidgets(_boardItems);
+      }
+    }));
+    return Container(
+      color: Colors.white,
+      height: 80,
+      child: Row(
+        children: list,
+      ),
+    );
+  }
+
+  Widget _actionButton(
+    ActionItem item,
+    Function(bool isSelected) callback,
+  ) {
+    Color iconColor = (_currentAction == item) ? Colors.blue : Colors.black;
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          IconButton(
+            icon: Icon(item.icon),
+            color: iconColor,
+            onPressed: () {
+              setState(() {
+                if (item.selectable) {
+                  callback(_currentAction != item);
+                  if (_currentAction != item) {
+                    _currentAction = item;
+                  } else {
+                    _currentAction = ActionItem.none;
+                  }
+                  return;
+                }
+                _currentAction = item;
+                callback(true);
+              });
+            },
+          ),
+          Text(
+            item.text,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /**
+   * Image
+   */
   List<Widget> mapBoardWidgets(List<BoardItem> items) {
-    return items.map((e) {
+    items.sort((a, b) => a.lastUpdate.compareTo(b.lastUpdate));
+    var list = items.map((e) {
       if (e.file != null) {
         if (e.equal(_selectedItem)) {
           return animatedImageWidget(e);
@@ -114,6 +185,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       }
       return const Text('error item');
     }).toList();
+    return list;
   }
 
   Widget positionedImageWidget(BoardItem item) {
@@ -145,6 +217,10 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                 child: Container(
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.black, width: 2)),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 2)),
+                  ),
                 ),
               ),
               Container(
@@ -185,72 +261,14 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       child: imageWidget,
       onTapUp: (detail) {},
       onTap: () {
-        _selectedItem = item;
         setState(() {
+          item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
+          _currentAction = ActionItem.imageItem;
+          _selectedItem = item;
           _boardWidgets = mapBoardWidgets(_boardItems);
         });
       },
       onTapDown: (detail) {},
-    );
-  }
-
-  /**
-   * Bottom toolbar
-   */
-  Widget _toolbar() {
-    return Container(
-      color: Colors.white,
-      height: 80,
-      child: Row(
-        children: toolbarButtons(),
-      ),
-    );
-  }
-
-  List<Widget> toolbarButtons() {
-    List<Widget> list = [];
-    list.add(_toolbarButton(ToolbarItem.textItem, () {}));
-    list.add(_toolbarButton(ToolbarItem.imageItem, () {
-      _pickImage();
-    }));
-    list.add(_toolbarButton(ToolbarItem.stickerItem, () {}));
-    list.add(_toolbarButton(ToolbarItem.drawItem, () {}));
-    return list;
-  }
-
-  Widget _toolbarButton(
-    ToolbarItem item,
-    VoidCallback callback,
-  ) {
-    Color iconColor = (_currentTool == item) ? Colors.blue : Colors.black;
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(item.icon),
-            color: iconColor,
-            onPressed: () {
-              setState(() {
-                if (_currentTool != item) {
-                  _currentTool = item;
-                } else {
-                  _currentTool = null;
-                }
-              });
-              callback();
-            },
-          ),
-          Text(
-            item.text,
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -279,6 +297,109 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       setState(() {});
     }
   }
+
+  /**
+   * Draw
+   */
+  Widget drawToolWidget() {
+    if (_currentAction != ActionItem.drawItem) {
+      return const SizedBox();
+    }
+    return Column(
+      children: [
+        Row(
+          children: [
+            IconButton(
+                icon: const Icon(Icons.undo),
+                onPressed: () {
+                  //TODO: undo
+                }),
+          ],
+        ),
+        Row(
+          children: [
+            colorButton(Colors.black),
+            colorButton(Colors.red),
+            colorButton(Colors.blue),
+            colorButton(Colors.green),
+            colorButton(Colors.yellow),
+            colorButton(Colors.purple),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget colorButton(Color color) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedColor = color;
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+        child: Container(
+          height: 36,
+          width: 36,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget drawWidget() {
+    var repaintWidget = RepaintBoundary(
+      key: globalKey,
+      child: Stack(
+        children: <Widget>[
+          CustomPaint(
+            size: Size.infinite,
+            painter: MyPainter(
+              pointsList: points,
+            ),
+          ),
+        ],
+      ),
+    );
+    if (_currentAction != ActionItem.drawItem) {
+      return repaintWidget;
+    }
+    return GestureDetector(
+      onPanUpdate: (details) {
+        setState(() {
+          RenderBox renderBox = context.findRenderObject()! as RenderBox;
+          points.add(TouchPoints(
+              points: renderBox.globalToLocal(details.globalPosition),
+              paint: Paint()
+                ..strokeCap = strokeType
+                ..isAntiAlias = true
+                ..color = selectedColor.withOpacity(opacity)
+                ..strokeWidth = strokeWidth));
+        });
+      },
+      onPanStart: (details) {
+        setState(() {
+          RenderBox renderBox = context.findRenderObject()! as RenderBox;
+          points.add(TouchPoints(
+              points: renderBox.globalToLocal(details.globalPosition),
+              paint: Paint()
+                ..strokeCap = strokeType
+                ..isAntiAlias = true
+                ..color = selectedColor.withOpacity(opacity)
+                ..strokeWidth = strokeWidth));
+        });
+      },
+      onPanEnd: (details) {
+        setState(() {
+          points.add(null);
+        });
+      },
+      child: repaintWidget,
+    );
+  }
+
+
 }
 
 class BoardItem {
@@ -290,13 +411,15 @@ class BoardItem {
   bool isLockRotate = true;
   bool isLockScale = true;
   bool isLockMove = true;
+  int lastUpdate = 0;
 
   //Matrix4 translationDeltaMatrix = Matrix4.identity();
   //Matrix4 scaleDeltaMatrix = Matrix4.identity();
   //Matrix4 rotationDeltaMatrix = Matrix4.identity();
   Matrix4 matrix = Matrix4.identity();
 
-  BoardItem(this.id, {this.file, this.assetPath, this.text});
+  BoardItem(this.id,
+      {this.file, this.assetPath, this.text, this.lastUpdate = 0});
 
   bool equal(BoardItem? item) {
     if (item == null) return false;
@@ -306,34 +429,39 @@ class BoardItem {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is BoardItem && runtimeType == other.runtimeType && id == other.id;
+      other is BoardItem && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
+
+  static BoardItem none = BoardItem(-1);
 }
 
-class ToolbarItem {
+class ActionItem {
   int id;
   IconData icon;
   String text;
+  bool selectable = false;
 
-  ToolbarItem(this.id, this.icon, this.text);
+  ActionItem(this.id, this.icon, this.text, {this.selectable = false});
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is ToolbarItem &&
-              runtimeType == other.runtimeType &&
-              id == other.id;
+      other is ActionItem && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
 
-  static ToolbarItem textItem = ToolbarItem(1, Icons.abc, 'text');
+  static ActionItem none = ActionItem(-1, Icons.abc, 'none');
 
-  static ToolbarItem imageItem = ToolbarItem(2, Icons.image, 'image');
+  static ActionItem textItem = ActionItem(1, Icons.abc, 'text');
 
-  static ToolbarItem stickerItem = ToolbarItem(3, Icons.emoji_emotions, 'sticker');
+  static ActionItem imageItem = ActionItem(2, Icons.image, 'image');
 
-  static ToolbarItem drawItem = ToolbarItem(4, Icons.draw, 'draw');
+  static ActionItem stickerItem =
+      ActionItem(3, Icons.emoji_emotions, 'sticker');
+
+  static ActionItem drawItem =
+      ActionItem(4, Icons.draw, 'draw', selectable: true);
 }
