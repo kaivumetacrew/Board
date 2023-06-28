@@ -1,9 +1,6 @@
-import 'package:board/main_matrix_gesture.dart';
 import 'package:board/ui/board.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import '../transform/transform_demo.dart';
+import '../canvas/canvas.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -23,8 +20,8 @@ class _MenuPageState extends State<MenuPage> {
             menuButton('New board', () {
               push(const BoardPage());
             }),
-            menuButton('Demo', () {
-              push(const DemoPage());
+            menuButton("Canvas", () {
+              push( CanvasPainting());
             }),
             menuButton('My boards', () {}),
           ],
