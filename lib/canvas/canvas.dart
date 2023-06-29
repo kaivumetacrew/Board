@@ -1,8 +1,4 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 
 import '../util/finger_draw.dart';
 
@@ -15,12 +11,18 @@ class CanvasPainting extends StatefulWidget {
 
 class _CanvasPaintingState extends State<CanvasPainting> {
   GlobalKey globalKey = GlobalKey();
-
+  Size? screenSize;
   List<TouchPoints?> points = [];
   double opacity = 1.0;
   StrokeCap strokeType = StrokeCap.round;
   double strokeWidth = 3.0;
   Color selectedColor = Colors.black;
+
+  /// Max width of canvas
+  late double maxWidth;
+
+  /// Max height of canvas
+  late double maxHeight;
 
   Future<void> _pickStroke() async {
     //Shows AlertDialog
@@ -213,69 +215,150 @@ class _CanvasPaintingState extends State<CanvasPainting> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    screenSize = MediaQuery.of(context).size;
+  }
+
+  @override
+  // Widget build(BuildContext context) {
+  //   return MaterialApp(
+  //     debugShowCheckedModeBanner: false,
+  //     home: Scaffold(
+  //         body: Stack(
+  //       children: [
+  //         GestureDetector(
+  //           onPanUpdate: (details) {
+  //             setState(() {
+  //               RenderBox renderBox = context.findRenderObject()! as RenderBox;
+  //               points.add(TouchPoints(
+  //                   points: renderBox.globalToLocal(details.globalPosition),
+  //                   paint: Paint()
+  //                     ..strokeCap = strokeType
+  //                     ..isAntiAlias = true
+  //                     ..color = selectedColor.withOpacity(opacity)
+  //                     ..strokeWidth = strokeWidth));
+  //             });
+  //           },
+  //           onPanStart: (details) {
+  //             debugPrint('onPanStart, points size: ${points.length}');
+  //             setState(() {
+  //
+  //               RenderBox renderBox = context.findRenderObject()! as RenderBox;
+  //               points.add(TouchPoints(
+  //                   points: renderBox.globalToLocal(details.globalPosition),
+  //                   paint: Paint()
+  //                     ..strokeCap = strokeType
+  //                     ..isAntiAlias = true
+  //                     ..color = selectedColor.withOpacity(opacity)
+  //                     ..strokeWidth = strokeWidth));
+  //             });
+  //           },
+  //           onPanEnd: (details) {
+  //             debugPrint('onPanEnd, points size: ${points.length}');
+  //             setState(() {
+  //               points.add(null);
+  //
+  //             });
+  //           },
+  //           child: RepaintBoundary(
+  //             key: globalKey,
+  //             child: Stack(
+  //               children: <Widget>[
+  //                 CustomPaint(
+  //                   size: Size.infinite,
+  //                   painter: MyPainter(
+  //                     pointsList: points,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //         Positioned(
+  //           bottom: 0,
+  //           right: 0,
+  //           child: Column(
+  //             children: fabOption(),
+  //           ),
+  //         )
+  //       ],
+  //     )),
+  //   );
+  // }
   Widget build(BuildContext context) {
+    maxWidth = screenSize!.width!;
+    maxHeight = screenSize!.width! * 4 / 3;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+          appBar: AppBar(title: const Text("Canvas")),
           body: Stack(
-        children: [
-          GestureDetector(
-            onPanUpdate: (details) {
-              setState(() {
-                RenderBox renderBox = context.findRenderObject()! as RenderBox;
-                points.add(TouchPoints(
-                    points: renderBox.globalToLocal(details.globalPosition),
-                    paint: Paint()
-                      ..strokeCap = strokeType
-                      ..isAntiAlias = true
-                      ..color = selectedColor.withOpacity(opacity)
-                      ..strokeWidth = strokeWidth));
-              });
-            },
-            onPanStart: (details) {
-              debugPrint('onPanStart, points size: ${points.length}');
-              setState(() {
-
-                RenderBox renderBox = context.findRenderObject()! as RenderBox;
-                points.add(TouchPoints(
-                    points: renderBox.globalToLocal(details.globalPosition),
-                    paint: Paint()
-                      ..strokeCap = strokeType
-                      ..isAntiAlias = true
-                      ..color = selectedColor.withOpacity(opacity)
-                      ..strokeWidth = strokeWidth));
-              });
-            },
-            onPanEnd: (details) {
-              debugPrint('onPanEnd, points size: ${points.length}');
-              setState(() {
-                points.add(null);
-
-              });
-            },
-            child: RepaintBoundary(
-              key: globalKey,
-              child: Stack(
-                children: <Widget>[
-                  CustomPaint(
-                    size: Size.infinite,
-                    painter: MyPainter(
-                      pointsList: points,
+            children: [
+              Container(
+                color: Colors.yellow,
+                child: AspectRatio(
+                  aspectRatio: 3 / 4,
+                  child: GestureDetector(
+                    onPanUpdate: (details) {
+                      setState(() {
+                        RenderBox renderBox =
+                            context.findRenderObject()! as RenderBox;
+                        points.add(TouchPoints(
+                            points:
+                                renderBox.globalToLocal(details.globalPosition),
+                            paint: Paint()
+                              ..strokeCap = strokeType
+                              ..isAntiAlias = true
+                              ..color = selectedColor.withOpacity(opacity)
+                              ..strokeWidth = strokeWidth));
+                      });
+                    },
+                    onPanStart: (details) {
+                      debugPrint('onPanStart, points size: ${points.length}');
+                      setState(() {
+                        RenderBox renderBox =
+                            context.findRenderObject()! as RenderBox;
+                        points.add(TouchPoints(
+                            points:
+                                renderBox.globalToLocal(details.globalPosition),
+                            paint: Paint()
+                              ..strokeCap = strokeType
+                              ..isAntiAlias = true
+                              ..color = selectedColor.withOpacity(opacity)
+                              ..strokeWidth = strokeWidth));
+                      });
+                    },
+                    onPanEnd: (details) {
+                      debugPrint('onPanEnd, points size: ${points.length}');
+                      setState(() {
+                        points.add(null);
+                      });
+                    },
+                    child: RepaintBoundary(
+                      child: CustomPaint(
+                        painter: MyPainter(pointsList: points),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                              minWidth: maxWidth,
+                              minHeight: maxHeight,
+                              maxWidth: maxWidth,
+                              maxHeight: maxHeight),
+                        ),
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Column(
-              children: fabOption(),
-            ),
-          )
-        ],
-      )),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Column(
+                  children: fabOption(),
+                ),
+              )
+            ],
+          )),
     );
   }
 

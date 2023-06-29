@@ -1,3 +1,4 @@
+import 'package:board/canvas/signature.dart';
 import 'package:board/ui/board.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,9 @@ class _MenuPageState extends State<MenuPage> {
             }),
             menuButton("Canvas", () {
               push(CanvasPainting());
+            }),
+            menuButton('Signature', () {
+              push(SignaturePage());
             }),
             menuButton('My boards', () {}),
           ],

@@ -16,8 +16,10 @@ class BoardPage extends StatefulWidget {
 }
 
 class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
+
   final List<BoardItem> _boardItems = [];
   List<Widget> _boardWidgets = [];
+  Size? screenSize;
 
   double boardWidth = 0;
   double boardHeight = 0;
@@ -50,6 +52,12 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    screenSize = MediaQuery.of(context).size;
   }
 
   @override
@@ -594,14 +602,24 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       return const SizedBox(width: 0.0, height: 0.0);
     }
 
-    var repaintBound= RepaintBoundary(
-      child: CustomPaint(
-        size: Size.infinite,
-        painter: MyPainter(
-          pointsList: points,
-        ),
+    var customPaint = CustomPaint(
+      size: Size.infinite,
+      painter: MyPainter(
+        pointsList: points,
       ),
     );
+    var paintArea = SizedBox(
+      width: double.infinity,
+      child: AspectRatio(
+          aspectRatio: 1 / boardRatio,
+          child: customPaint
+      ),
+    );
+    var repaintBound = RepaintBoundary(
+      child: customPaint,
+    );
+
+
     return GestureDetector(
       onPanUpdate: (details) {
         setState(() {
@@ -631,20 +649,16 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         setState(() {
           points.add(null);
           var item = BoardItem(_boardItems.length);
-          item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
+          item.lastUpdate = DateTime
+              .now()
+              .millisecondsSinceEpoch;
           item.points = points;
           points = [];
           _boardItems.add(item);
           _syncMapWidget();
         });
       },
-      child: SizedBox(
-        width: double.infinity,
-        child: AspectRatio(
-            aspectRatio: 1 / boardRatio,
-            child: repaintBound
-        ),
-      ),
+      child: repaintBound,
     );
 
   }
