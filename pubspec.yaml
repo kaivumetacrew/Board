@@ -77,6 +77,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/images/
+    - assets/fonts/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 
@@ -102,3 +103,39 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+  fonts:
+    - family: BebasNeue
+      fonts:
+        - asset: assets/fonts/BebasNeue.ttf
+
+    - family: Fasthand
+      fonts:
+       - asset: assets/fonts/Fasthand.ttf
+
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
+
+    - family: Lobster
+      fonts:
+        - asset: assets/fonts/Lobster.ttf
+
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat.ttf
+
+    - family: NunitoSans
+      fonts:
+        - asset: assets/fonts/NunitoSans.ttf
+
+    - family: Pacifico
+      fonts:
+        - asset: assets/fonts/Pacifico.ttf
+
+    - family: PlayfairDisplay
+      fonts:
+        - asset: assets/fonts/PlayfairDisplay.ttf
+
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto.ttf

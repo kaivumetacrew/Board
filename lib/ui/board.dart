@@ -25,14 +25,23 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   Alignment focalPoint = Alignment.center;
   late AnimationController controller;
   BoardItem _selectedItem = BoardItem.none;
-  ActionItem _currentAction = ActionItem.none;
+  ActionItem _selectedAction = ActionItem.none;
 
   GlobalKey globalKey = GlobalKey();
   List<TouchPoints?> points = [];
   double opacity = 1.0;
   StrokeCap strokeType = StrokeCap.round;
+  String selectedFont = '';
   double strokeWidth = 3.0;
   Color selectedColor = Colors.black;
+  List<Color> colorList = [
+    Colors.black,
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow,
+    Colors.purple
+  ];
 
   @override
   void initState() {
@@ -52,64 +61,60 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       backgroundColor: Colors.white,
       appBar:  AppBar(title: const Text("Board")),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: Center(
-                      child: Container(
-                        color: Colors.white,
-                        child: AspectRatio(
-                          aspectRatio: 1 / boardRatio,
-                          child: MatrixGestureDetector(
-                            onScaleStart: () {},
-                            onScaleEnd: () {},
-                            onMatrixUpdate: (
-                              state,
-                              matrix,
-                              translationDeltaMatrix,
-                              scaleDeltaMatrix,
-                              rotationDeltaMatrix,
+            Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    color: Colors.white,
+                    child: AspectRatio(
+                      aspectRatio: 1 / boardRatio,
+                      child: MatrixGestureDetector(
+                        onScaleStart: () {},
+                        onScaleEnd: () {},
+                        onMatrixUpdate: (
+                            state,
+                            matrix,
+                            translationDeltaMatrix,
+                            scaleDeltaMatrix,
+                            rotationDeltaMatrix,
                             ) {
-                              if (_selectedItem == BoardItem.none) {
-                                return;
-                              }
-                              if (_selectedItem.id != state.id) {
-                                state.id = _selectedItem.id;
-                                state.update(_selectedItem.matrix);
-                                return;
-                              }
-                              _selectedItem.matrix = matrix;
-                              _selectedItem.notifier.value = matrix;
-                            },
-                            child: Stack(
-                              children: [
-                                Stack(
-                                  children: _boardWidgets,
-                                ),
-                                _actionDrawWidget(),
-                              ],
-                            ),
-                          ),
-                        ),
+                          if (_selectedAction != ActionItem.imageItem &&
+                              _selectedAction != ActionItem.textItem) {
+                            return;
+                          }
+                          if (_selectedItem == BoardItem.none) {
+                            return;
+                          }
+                          if (_selectedItem.id != state.id) {
+                            state.id = _selectedItem.id;
+                            state.update(_selectedItem.matrix);
+                            return;
+                          }
+                          _selectedItem.matrix = matrix;
+                          _selectedItem.notifier.value = matrix;
+                        },
+                        child: Stack(children: _boardWidgets),
                       ),
                     ),
                   ),
-                  Container(width: double.infinity, height: 1, color: ColorRes.text),
-                  Expanded(
-                      child: Container(
-                        width: double.infinity,
-                    padding: const EdgeInsets.all(8.0),
-                    child: _toolWidget(),
-                  )),
-                ],
-              ),
+                ),
+                Container(
+                    width: double.infinity, height: 1, color: ColorRes.text),
+                Expanded(
+                    child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(4.0),
+                  child: _toolWidget(),
+                )),
+                Container(
+                    width: double.infinity, height: 1, color: ColorRes.text),
+                _actionBar()
+              ],
             ),
-            Container(width: double.infinity, height: 1, color: ColorRes.text),
-            _actionBar()
+            _actionDrawWidget(),
           ],
         ),
       ),
@@ -121,13 +126,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
    */
   Widget _actionBar() {
     List<Widget> list = [];
-    list.add(_actionButton(ActionItem.textItem, (isSelected) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const TextPage(),
-          fullscreenDialog: true,
-        ),
-      );
+    list.add(_actionButton(ActionItem.textItem, (isSelected) async {
+      pickText();
     }));
     list.add(_actionButton(ActionItem.imageItem, (isSelected) {
       _pickImage();
@@ -148,11 +148,35 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
+  Future<void> pickText() async {
+    final Map<String, dynamic>? result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TextPage(text: ''),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null) return;
+    String text = result['text'];
+    String font = result['font'];
+    if (text.isEmpty || font.isEmpty) return;
+    selectedFont = font;
+    var item = BoardItem(_boardItems.length, text: text, font: font);
+    item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
+    _selectedItem = item;
+    _boardItems.add(item);
+    _selectedAction = ActionItem.textItem;
+    setState(() {
+      _syncMapWidget();
+    });
+  }
+
   Widget _actionButton(
     ActionItem item,
     Function(bool isSelected) callback,
   ) {
-    Color iconColor = (_currentAction == item) ? ColorRes.primary : ColorRes.lightGray;
+    Color iconColor = (item.selectable && _selectedAction == item)
+        ? ColorRes.primary
+        : ColorRes.lightGray;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -162,17 +186,18 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
             color: iconColor,
             onPressed: () {
               setState(() {
-                if (item.selectable) {
-                  callback(_currentAction != item);
-                  if (_currentAction != item) {
-                    _currentAction = item;
-                  } else {
-                    _currentAction = ActionItem.none;
-                  }
+                if (!item.selectable) {
+                  _selectedAction = ActionItem.none;
+                  callback(false);
                   return;
                 }
-                _currentAction = item;
-                callback(true);
+                if (_selectedAction != item) {
+                  _selectedAction = item;
+                  callback(true);
+                  return;
+                }
+                _selectedAction = ActionItem.none;
+                callback(false);
               });
             },
           ),
@@ -193,10 +218,13 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
    *
    */
   Widget _toolWidget() {
-    if (_currentAction == ActionItem.imageItem) {
+    if (_selectedAction == ActionItem.textItem) {
+      return _textToolWidget();
+    }
+    if (_selectedAction == ActionItem.imageItem) {
       return _imageToolWidget();
     }
-    if (_currentAction == ActionItem.drawItem) {
+    if (_selectedAction == ActionItem.drawItem) {
       return _drawToolWidget();
     }
     return const SizedBox();
@@ -212,18 +240,147 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   List<Widget> _mapBoardWidgets(List<BoardItem> items) {
     items.sort((a, b) => a.lastUpdate.compareTo(b.lastUpdate));
     var list = items.map((e) {
-      if (e.file != null) {
+      if (e.isTextItem) {
+        if (e.equal(_selectedItem)) {
+          return _animatedTextWidget(e);
+        }
+        return _positionedTextWidget(e);
+      }
+      if (e.isImageItem) {
         if (e.equal(_selectedItem)) {
           return _animatedImageWidget(e);
         }
         return _positionedImageWidget(e);
       }
-      if (e.points.isNotEmpty) {
-        return _drawActionWidget(e.points);
+      if (e.isDrawItem) {
+        return _drawPointWidget(e.points);
       }
       return const Text('error item');
     }).toList();
     return list;
+  }
+
+  /**
+   * Text
+   */
+  Widget _positionedTextWidget(BoardItem item) {
+    return Transform(
+      transform: item.notifier.value,
+      child: Container(
+        margin: const EdgeInsets.all(5.0),
+        child: Container(
+          child: _textWidget(item),
+        ),
+      ),
+    );
+  }
+
+  Widget _animatedTextWidget(BoardItem item) {
+    return AnimatedBuilder(
+      animation: item.notifier,
+      builder: (ctx, child) {
+        return Transform(
+          transform: item.notifier.value,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: 0,
+                left: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black, width: 1)),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 1)),
+                  ),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.all(5.0),
+                child: Container(
+                  child: _textWidget(item),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _textWidget(BoardItem item) {
+    var textWidget = Text(
+      item.text!,
+      style: TextStyle(fontFamily: item.font, color: item.color, fontSize: 48),
+    );
+    return GestureDetector(
+      child: textWidget,
+      onTap: () {
+        _selectedAction = ActionItem.textItem;
+        _selectedItem = item;
+        setState(() {
+          debugPrint("onTap text item${item.id}");
+          //item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
+          _syncMapWidget();
+        });
+      },
+    );
+  }
+
+  Widget _textToolWidget() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  _boardItems
+                      .removeWhere((element) => element == _selectedItem);
+                  setState(() {
+                    _syncMapWidget();
+                  });
+                }),
+          ],
+        ),
+        SizedBox(
+          height: 40,
+          width: double.infinity,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            controller: colorListScrollCtrl,
+            shrinkWrap: true,
+            padding: const EdgeInsets.only(left: 0, right: 0),
+            itemCount: colorList.length,
+            itemBuilder: (context, index) {
+              var color = colorList[index];
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (_selectedItem.isTextItem) {
+                      _selectedItem.color = color;
+                      _syncMapWidget();
+                    }
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 4.0, vertical: 2.0),
+                  child: Container(
+                    height: 36,
+                    width: 36,
+                    color: color,
+                  ),
+                ),
+              );
+            },
+          ),
+        )
+      ],
+    );
   }
 
   /**
@@ -257,10 +414,10 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                 left: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 2)),
+                      border: Border.all(color: Colors.black, width: 1)),
                   child: Container(
                     decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 2)),
+                        border: Border.all(color: Colors.white, width: 1)),
                   ),
                 ),
               ),
@@ -270,20 +427,6 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                   child: _imageWidget(item),
                 ),
               ),
-              // Positioned(
-              //     left: 0,
-              //     top: 0,
-              //     child: Ink(
-              //       decoration: const ShapeDecoration(
-              //         color: Colors.black,
-              //         shape: CircleBorder(),
-              //       ),
-              //       child: IconButton(
-              //         icon: const Icon(Icons.close),
-              //         color: Colors.red,
-              //         onPressed: () {},
-              //       ),
-              //     )),
             ],
           ),
         );
@@ -300,17 +443,15 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     });
     return GestureDetector(
       child: imageWidget,
-      onTapUp: (detail) {},
       onTap: () {
+        _selectedAction = ActionItem.imageItem;
+        _selectedItem = item;
         setState(() {
-          debugPrint("onTap ${item.id}");
-          item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
-          _currentAction = ActionItem.imageItem;
-          _selectedItem = item;
+          debugPrint("onTap image item ${item.id}");
+          //item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
           _syncMapWidget();
         });
       },
-      onTapDown: (detail) {},
     );
   }
 
@@ -365,17 +506,16 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         maxHeight: 4000,
         imageQuality: 100,
       );
+      var item = BoardItem(
+        _boardItems.length,
+        file: File(pickedFile!.path!),
+      );
+      item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
+      _selectedItem = item;
+      _boardItems.add(item);
+      _selectedAction = ActionItem.imageItem;
       setState(() {
-        var item = BoardItem(
-          _boardItems.length,
-          file: File(pickedFile!.path!),
-        );
-        item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
-        _selectedItem = item;
-        _boardItems.add(item);
-        setState(() {
-          _syncMapWidget();
-        });
+        _syncMapWidget();
       });
     } catch (e) {
       setState(() {});
@@ -385,6 +525,19 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   /**
    * Draw
    */
+  final ScrollController colorListScrollCtrl = ScrollController();
+
+  Widget _drawPointWidget(List<TouchPoints?> points) {
+    return Container(
+      color: const Color.fromARGB(100, 163, 93, 65),
+      child: CustomPaint(
+        painter: MyPainter(
+          pointsList: points,
+        ),
+      ),
+    );
+  }
+
   Widget _drawToolWidget() {
     return Column(
       children: [
@@ -402,53 +555,53 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                 }),
           ],
         ),
-        Row(
-          children: [
-            _drawColorButton(Colors.black),
-            _drawColorButton(Colors.red),
-            _drawColorButton(Colors.blue),
-            _drawColorButton(Colors.green),
-            _drawColorButton(Colors.yellow),
-            _drawColorButton(Colors.purple),
-          ],
-        ),
+        SizedBox(
+          height: 40,
+          width: double.infinity,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            controller: colorListScrollCtrl,
+            shrinkWrap: true,
+            padding: const EdgeInsets.only(left: 0, right: 0),
+            itemCount: colorList.length,
+            itemBuilder: (context, index) {
+              var color = colorList[index];
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedColor = color;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 4.0, vertical: 2.0),
+                  child: Container(
+                    height: 36,
+                    width: 36,
+                    color: color,
+                  ),
+                ),
+              );
+            },
+          ),
+        )
       ],
     );
   }
 
-  Widget _drawColorButton(Color color) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedColor = color;
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
-        child: Container(
-          height: 36,
-          width: 36,
-          color: color,
-        ),
-      ),
-    );
-  }
+  Widget _actionDrawWidget() {
+    if (_selectedAction != ActionItem.drawItem) {
+      return const SizedBox(width: 0.0, height: 0.0);
+    }
 
-  Widget _drawActionWidget(List<TouchPoints?> points) {
-    return Container(
-      color: const Color.fromARGB(100, 163, 93, 65),
+    var repaintBound= RepaintBoundary(
       child: CustomPaint(
+        size: Size.infinite,
         painter: MyPainter(
           pointsList: points,
         ),
       ),
     );
-  }
-
-  Widget _actionDrawWidget() {
-    if (_currentAction != ActionItem.drawItem) {
-      return const SizedBox(width: 0.0, height: 0.0);
-    }
     return GestureDetector(
       onPanUpdate: (details) {
         setState(() {
@@ -485,20 +638,20 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
           _syncMapWidget();
         });
       },
-      child: RepaintBoundary(
-        child: Stack(
-          children: <Widget>[
-            CustomPaint(
-              size: Size.infinite,
-              painter: MyPainter(
-                pointsList: points,
-              ),
-            ),
-          ],
+      child: SizedBox(
+        width: double.infinity,
+        child: AspectRatio(
+            aspectRatio: 1 / boardRatio,
+            child: repaintBound
         ),
       ),
     );
+
   }
+
+/**
+ *
+ */
 }
 
 class BoardItem {
@@ -506,6 +659,8 @@ class BoardItem {
   String? assetPath = null;
   File? file = null;
   String? text = null;
+  String? font = null;
+  Color color = Colors.black;
   ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
   bool isLockRotate = true;
   bool isLockScale = true;
@@ -519,7 +674,7 @@ class BoardItem {
   Matrix4 matrix = Matrix4.identity();
 
   BoardItem(this.id,
-      {this.file, this.assetPath, this.text, this.lastUpdate = 0});
+      {this.file, this.assetPath, this.text, this.font, this.lastUpdate = 0});
 
   bool equal(BoardItem? item) {
     if (item == null) return false;
@@ -535,6 +690,12 @@ class BoardItem {
   int get hashCode => id.hashCode;
 
   static BoardItem none = BoardItem(-1);
+
+  bool get isTextItem => text != null && text!.isNotEmpty;
+
+  bool get isImageItem => file != null;
+
+  bool get isDrawItem => points.isNotEmpty;
 }
 
 class ActionItem {
