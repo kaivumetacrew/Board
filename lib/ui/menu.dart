@@ -1,8 +1,7 @@
-import 'package:board/canvas/signature.dart';
+import 'package:board/canvas/draw.dart';
 import 'package:board/ui/board.dart';
 import 'package:flutter/material.dart';
 
-import '../canvas/canvas.dart';
 import '../res/color.dart';
 
 class MenuPage extends StatefulWidget {
@@ -24,9 +23,6 @@ class _MenuPageState extends State<MenuPage> {
           children: <Widget>[
             menuButton('New board', () {
               push(const BoardPage());
-            }),
-            menuButton("Canvas", () {
-              push(CanvasPainting());
             }),
             menuButton('Signature', () {
               push(SignaturePage());

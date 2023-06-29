@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:image/image.dart' as img;
 
 /// signature canvas. Controller is required, other parameters are optional.
@@ -109,7 +108,7 @@ class SignatureState extends State<Signature> {
             },
             child: RepaintBoundary(
               child: CustomPaint(
-                painter: _SignaturePainter(widget.controller),
+                painter: SignaturePainter(widget.controller),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                       minWidth: maxWidth,
@@ -199,39 +198,15 @@ class SignatureState extends State<Signature> {
   }
 }
 
-/// type of user display finger movement
-enum PointType {
-  /// one touch on specific place - tap
-  tap,
-
-  /// finger touching the display and moving around
-  move,
-}
-
-/// one point on canvas represented by offset and type
-class Point {
-  /// constructor
-  Point(this.offset, this.type, this.pressure);
-
-  /// x and y value on 2D canvas
-  Offset offset;
-
-  /// pressure that user applied
-  double pressure;
-
-  /// type of user display finger movement
-  PointType type;
-}
-
-class _SignaturePainter extends CustomPainter {
-  _SignaturePainter(this._controller, {Color? penColor})
+class SignaturePainter extends CustomPainter {
+  SignaturePainter(this._controller, {Color? penColor})
       : _penStyle = Paint(),
         super(repaint: _controller) {
     _penStyle
-      ..color = penColor != null ? penColor : _controller.penColor
-      ..strokeWidth = _controller.penStrokeWidth
-      ..strokeCap = _controller.strokeCap
-      ..strokeJoin = _controller.strokeJoin;
+      ..color = penColor ?? _controller.penColor
+      ..strokeWidth = _controller.penStrokeWidth;
+    //..strokeCap = _controller.strokeCap
+    //..strokeJoin = _controller.strokeJoin;
   }
 
   final SignatureController _controller;
@@ -262,7 +237,7 @@ class _SignaturePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter other) => true;
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
 
 /// class for interaction with signature widget
@@ -288,7 +263,7 @@ class SignatureController extends ValueNotifier<List<Point>> {
   bool disabled;
 
   /// color of a signature line
-  final Color penColor;
+  Color penColor;
 
   /// boldness of a signature line
   final double penStrokeWidth;
@@ -302,7 +277,7 @@ class SignatureController extends ValueNotifier<List<Point>> {
   /// background color to be used in exported png image
   final Color? exportBackgroundColor;
 
-  /// color of a ginature line to be used in exported png image
+  /// color of a signature line to be used in exported png image
   final Color? exportPenColor;
 
   /// callback to notify when drawing has started
@@ -455,7 +430,7 @@ class SignatureController extends ValueNotifier<List<Point>> {
         ((height ?? defaultHeight!) - defaultHeight!).toDouble() / 2,
       );
     }
-    _SignaturePainter(this, penColor: exportPenColor).paint(
+    SignaturePainter(this, penColor: exportPenColor).paint(
       canvas,
       Size.infinite,
     );
@@ -569,7 +544,7 @@ class SignatureController extends ValueNotifier<List<Point>> {
     String formatPoint(Point p) =>
         '${p.offset.dx.toStringAsFixed(2)},${p.offset.dy.toStringAsFixed(2)}';
 
-    final String polylines = <String>[
+    final String polyLines = <String>[
       for (final List<Point> stroke in _latestActions)
         '<polyline '
             'fill="none" '
@@ -584,10 +559,182 @@ class SignatureController extends ValueNotifier<List<Point>> {
     return '<svg '
         'viewBox="0 0 $width $height" '
         'xmlns="http://www.w3.org/2000/svg"'
-        '>\n$polylines\n</svg>';
+        '>\n$polyLines\n</svg>';
+  }
+}
+
+class PointPainter extends CustomPainter {
+  PointPainter({
+    required this.points,
+    this.strokeColor = Colors.black,
+    this.strokeWidth = 3,
+    this.strokeCap = StrokeCap.round,
+    this.strokeJoin = StrokeJoin.round,
+  })  : _penStyle = Paint(),
+        super() {
+    _penStyle
+      ..color = strokeColor
+      ..strokeWidth = strokeWidth;
+    //..strokeCap = strokeCap
+    //..strokeJoin = strokeJoin;
   }
 
+  final Paint _penStyle;
+  List<Point> points;
+  Color strokeColor;
+  double strokeWidth;
+  StrokeCap strokeCap;
+  StrokeJoin strokeJoin;
 
+  @override
+  void paint(Canvas canvas, _) {
+    if (points.isEmpty) {
+      return;
+    }
+    for (int i = 0; i < (points.length - 1); i++) {
+      if (points[i + 1].type == PointType.move) {
+        _penStyle.strokeWidth *= points[i].pressure;
+        canvas.drawLine(
+          points[i].offset,
+          points[i + 1].offset,
+          _penStyle,
+        );
+      } else {
+        canvas.drawCircle(
+          points[i].offset,
+          (_penStyle.strokeWidth / 2) * points[i].pressure,
+          _penStyle,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
+}
+
+/// Styles to use for line endings.
+///
+/// See also:
+///
+///  * [Paint.strokeCap] for how this value is used.
+///  * [StrokeJoin] for the different kinds of line segment joins.
+// These enum values must be kept in sync with DlStrokeCap.
+enum StrokeCap {
+  /// Begin and end contours with a flat edge and no extension.
+  ///
+  /// ![A butt cap ends line segments with a square end that stops at the end of
+  /// the line segment.](https://flutter.github.io/assets-for-api-docs/assets/dart-ui/butt_cap.png)
+  ///
+  /// Compare to the [square] cap, which has the same shape, but extends past
+  /// the end of the line by half a stroke width.
+  butt,
+
+  /// Begin and end contours with a semi-circle extension.
+  ///
+  /// ![A round cap adds a rounded end to the line segment that protrudes
+  /// by one half of the thickness of the line (which is the radius of the cap)
+  /// past the end of the segment.](https://flutter.github.io/assets-for-api-docs/assets/dart-ui/round_cap.png)
+  ///
+  /// The cap is colored in the diagram above to highlight it: in normal use it
+  /// is the same color as the line.
+  round,
+
+  /// Begin and end contours with a half square extension. This is
+  /// similar to extending each contour by half the stroke width (as
+  /// given by [Paint.strokeWidth]).
+  ///
+  /// ![A square cap has a square end that effectively extends the line length
+  /// by half of the stroke width.](https://flutter.github.io/assets-for-api-docs/assets/dart-ui/square_cap.png)
+  ///
+  /// The cap is colored in the diagram above to highlight it: in normal use it
+  /// is the same color as the line.
+  ///
+  /// Compare to the [butt] cap, which has the same shape, but doesn't extend
+  /// past the end of the line.
+  square,
+}
+
+/// Styles to use for line segment joins.
+///
+/// This only affects line joins for polygons drawn by [Canvas.drawPath] and
+/// rectangles, not points drawn as lines with [Canvas.drawPoints].
+///
+/// See also:
+///
+/// * [Paint.strokeJoin] and [Paint.strokeMiterLimit] for how this value is
+///   used.
+/// * [StrokeCap] for the different kinds of line endings.
+// These enum values must be kept in sync with DlStrokeJoin.
+enum StrokeJoin {
+  /// Joins between line segments form sharp corners.
+  ///
+  /// {@animation 300 300 https://flutter.github.io/assets-for-api-docs/assets/dart-ui/miter_4_join.mp4}
+  ///
+  /// The center of the line segment is colored in the diagram above to
+  /// highlight the join, but in normal usage the join is the same color as the
+  /// line.
+  ///
+  /// See also:
+  ///
+  ///   * [Paint.strokeJoin], used to set the line segment join style to this
+  ///     value.
+  ///   * [Paint.strokeMiterLimit], used to define when a miter is drawn instead
+  ///     of a bevel when the join is set to this value.
+  miter,
+
+  /// Joins between line segments are semi-circular.
+  ///
+  /// {@animation 300 300 https://flutter.github.io/assets-for-api-docs/assets/dart-ui/round_join.mp4}
+  ///
+  /// The center of the line segment is colored in the diagram above to
+  /// highlight the join, but in normal usage the join is the same color as the
+  /// line.
+  ///
+  /// See also:
+  ///
+  ///   * [Paint.strokeJoin], used to set the line segment join style to this
+  ///     value.
+  round,
+
+  /// Joins between line segments connect the corners of the butt ends of the
+  /// line segments to give a beveled appearance.
+  ///
+  /// {@animation 300 300 https://flutter.github.io/assets-for-api-docs/assets/dart-ui/bevel_join.mp4}
+  ///
+  /// The center of the line segment is colored in the diagram above to
+  /// highlight the join, but in normal usage the join is the same color as the
+  /// line.
+  ///
+  /// See also:
+  ///
+  ///   * [Paint.strokeJoin], used to set the line segment join style to this
+  ///     value.
+  bevel,
+}
+
+/// type of user display finger movement
+enum PointType {
+  /// one touch on specific place - tap
+  tap,
+
+  /// finger touching the display and moving around
+  move,
+}
+
+/// one point on canvas represented by offset and type
+class Point {
+  /// constructor
+  Point(this.offset, this.type, this.pressure);
+
+  /// x and y value on 2D canvas
+  Offset offset;
+
+  /// pressure that user applied
+  double pressure;
+
+  /// type of user display finger movement
+  PointType type;
 }
 
 class SignaturePage extends StatefulWidget {
