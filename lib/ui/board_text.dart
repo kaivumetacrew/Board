@@ -3,15 +3,16 @@ import 'package:board/ui/widget/textfield.dart';
 import 'package:flutter/material.dart';
 
 class TextPage extends StatefulWidget {
-  TextPage({super.key, required this.text, this.font = ''});
+  TextPage({super.key,  this.text, this.font = ''});
 
-  String text;
+  String? text;
 String font ='';
   @override
   State<TextPage> createState() => _TextPageState();
 }
 
 class _TextPageState extends State<TextPage> {
+
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
   final ScrollController fontListScrollCtrl = ScrollController();
@@ -36,11 +37,13 @@ class _TextPageState extends State<TextPage> {
     if (_selectedFont.isEmpty) {
       _selectedFont = fontList.first;
     }
-    syncText(widget.text);
+    _textController.text = widget.text??'';
+    syncText(widget.text??'');
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(title: const Text("Text")),
       body: Center(
@@ -72,6 +75,7 @@ class _TextPageState extends State<TextPage> {
     return TextFieldOutline(
       controller: _textController,
       focusNode: _textFocusNode,
+
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       hintText: "Type text here",
@@ -111,7 +115,7 @@ class _TextPageState extends State<TextPage> {
     return ListView.separated(
       separatorBuilder: (BuildContext context, int index) => const Divider(),
       controller: fontListScrollCtrl,
-      shrinkWrap: true,
+      shrinkWrap: false,
       padding: const EdgeInsets.only(left: 0, right: 0),
       itemCount: fontList.length,
       itemBuilder: (context, index) {

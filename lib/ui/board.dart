@@ -5,12 +5,12 @@ import 'package:board/ui/board_text.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../canvas/draw.dart';
+import 'widget/draw.dart';
 import '../util/gesture_detector.dart';
 import 'board_model.dart';
 
 class BoardPage extends StatefulWidget {
-  const BoardPage({super.key});
+  BoardPage({super.key});
 
   @override
   State<BoardPage> createState() => _BoardPageState();
@@ -32,10 +32,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   double opacity = 1.0;
   StrokeCap strokeType = StrokeCap.round;
-  String selectedFont = '';
-  double strokeWidth = 3.0;
-  Color selectedColor = Colors.black;
-  List<Color> colorList = [
+  String _selectedFont = '';
+  double _strokeWidth = 3.0;
+  Color _selectedDrawColor = Colors.black;
+  Color _selectedTextColor = Colors.black;
+  List<Color> _colorList = [
     Colors.black,
     Colors.red,
     Colors.blue,
@@ -48,7 +49,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     _drawController.clear();
   }
 
-  final SignatureController _drawController = SignatureController(
+  final DrawController _drawController = DrawController(
     penStrokeWidth: 3,
     penColor: Colors.black,
     exportBackgroundColor: Colors.transparent,
@@ -158,7 +159,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   Widget _actionBar() {
     List<Widget> list = [];
     list.add(_actionButton(ActionItem.textItem, (isSelected) async {
-      pickText();
+      _pickText(BoardItem.none);
     }));
     list.add(_actionButton(ActionItem.imageItem, (isSelected) {
       _pickImage();
@@ -178,31 +179,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       ),
     );
   }
-
-  Future<void> pickText() async {
-    final Map<String, dynamic>? result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TextPage(text: ''),
-        fullscreenDialog: true,
-      ),
-    );
-    if (result == null) return;
-    String text = result['text'];
-    String font = result['font'];
-    if (text.isEmpty || font.isEmpty) return;
-    selectedFont = font;
-    var item = BoardItem(_boardItems.length)
-      ..text = text
-      ..lastUpdate = DateTime.now().millisecondsSinceEpoch;
-
-    _selectedItem = item;
-    _boardItems.add(item);
-    _selectedAction = ActionItem.textItem;
-    setState(() {
-      _syncMapWidget();
-    });
-  }
-
+  
   Widget _actionButton(
     ActionItem item,
     Function(bool isSelected) callback,
@@ -378,6 +355,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                     _syncMapWidget();
                   });
                 }),
+            IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  _pickText(_selectedItem);
+                }),
           ],
         ),
         SizedBox(
@@ -388,9 +370,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
             controller: colorListScrollCtrl,
             shrinkWrap: true,
             padding: const EdgeInsets.only(left: 0, right: 0),
-            itemCount: colorList.length,
+            itemCount: _colorList.length,
             itemBuilder: (context, index) {
-              var color = colorList[index];
+              var color = _colorList[index];
               return GestureDetector(
                 onTap: () {
                   setState(() {
@@ -415,6 +397,36 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         )
       ],
     );
+  }
+
+  Future<void> _pickText(BoardItem item) async {
+    final Map<String, dynamic>? result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TextPage(text: item.text),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null) return;
+    String text = result['text'];
+    String font = result['font'];
+    if (text.isEmpty || font.isEmpty) return;
+    _selectedFont = font;
+    if(item  == BoardItem.none){
+      var item = BoardItem(_boardItems.length)
+        ..text = text
+        ..font = font
+        ..textColor = _selectedTextColor
+        ..lastUpdate = DateTime.now().millisecondsSinceEpoch;
+
+      _boardItems.add(item);
+      _selectedItem = item;
+    }{
+      _selectedItem.text = text;
+    }
+    _selectedAction = ActionItem.textItem;
+    setState(() {
+      _syncMapWidget();
+    });
   }
 
   /**
@@ -556,6 +568,12 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   /**
+   * Sticker
+   */
+  
+  
+  
+  /**
    * Draw
    */
   final ScrollController colorListScrollCtrl = ScrollController();
@@ -599,9 +617,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
             controller: colorListScrollCtrl,
             shrinkWrap: true,
             padding: const EdgeInsets.only(left: 0, right: 0),
-            itemCount: colorList.length,
+            itemCount: _colorList.length,
             itemBuilder: (context, index) {
-              var color = colorList[index];
+              var color = _colorList[index];
               return _drawToolColorWidget(color);
             },
           ),
@@ -614,7 +632,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: () {
         setState(() {
-          selectedColor = color;
+          _selectedDrawColor = color;
           _drawController.penColor = color;
         });
       },
@@ -633,7 +651,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     if (_selectedAction != ActionItem.drawItem) {
       return const SizedBox(width: 0.0, height: 0.0);
     }
-    return Signature(
+    return DrawWidget(
       key: const Key('signature'),
       height: screenSize.width * boardRatio,
       controller: _drawController,
@@ -643,7 +661,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   void _onDrawEnd() {
     var item = BoardItem(_boardItems.length)
-      ..strokeColor = selectedColor
+      ..strokeColor = _selectedDrawColor
       ..lastUpdate = DateTime.now().millisecondsSinceEpoch
       ..points = _drawController.points;
 
@@ -658,7 +676,6 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
  *
  */
 }
-
 
 class ActionItem {
   int id;

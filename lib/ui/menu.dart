@@ -1,5 +1,5 @@
-import 'package:board/canvas/draw.dart';
 import 'package:board/ui/board.dart';
+import 'package:board/ui/stickers.dart';
 import 'package:flutter/material.dart';
 
 import '../res/color.dart';
@@ -22,10 +22,7 @@ class _MenuPageState extends State<MenuPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             menuButton('New board', () {
-              push(const BoardPage());
-            }),
-            menuButton('Signature', () {
-              push(SignaturePage());
+              push(BoardPage());
             }),
             menuButton('My boards', () {}),
           ],

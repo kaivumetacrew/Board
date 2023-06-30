@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:board/canvas/draw.dart';
+import 'package:board/ui/widget/draw.dart';
 import 'package:flutter/material.dart';
 
 class BoardItem {
