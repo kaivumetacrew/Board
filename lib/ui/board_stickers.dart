@@ -56,8 +56,8 @@ class _StickerPageState extends State<StickerPage> {
           child: AspectRatio(
             aspectRatio: 1,
             child: Padding(
-              padding: EdgeInsets.all(1),
-              child: Image.asset(imagePath('image1.jpg')),
+              padding: const EdgeInsets.all(1),
+              child: Image.asset(stickerPath(item)),
             ),
           ),
         );

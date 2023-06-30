@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:board/res/color.dart';
+import 'package:board/ui/board_background.dart';
+import 'package:board/ui/board_stickers.dart';
 import 'package:board/ui/board_text.dart';
-import 'package:board/ui/stickers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -21,6 +22,7 @@ class BoardPage extends StatefulWidget {
 class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   final List<BoardItem> _boardItems = [];
+  String boardImage = '';
   List<Widget> _boardWidgets = [];
   late Size screenSize;
 
@@ -93,41 +95,39 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       body: SafeArea(
         child: Stack(
           children: [
+            boardBackground(),
             Column(
               children: [
                 SizedBox(
                   width: double.infinity,
-                  child: Container(
-                    color: Colors.white,
-                    child: AspectRatio(
-                      aspectRatio: 1 / boardRatio,
-                      child: MatrixGestureDetector(
-                        onScaleStart: () {},
-                        onScaleEnd: () {},
-                        onMatrixUpdate: (
-                            state,
-                            matrix,
-                            translationDeltaMatrix,
-                            scaleDeltaMatrix,
-                            rotationDeltaMatrix,
-                            ) {
-                          if (_selectedAction != ActionItem.imageItem &&
-                              _selectedAction != ActionItem.textItem) {
-                            return;
-                          }
-                          if (_selectedItem == BoardItem.none) {
-                            return;
-                          }
-                          if (_selectedItem.id != state.id) {
-                            state.id = _selectedItem.id;
-                            state.update(_selectedItem.matrix);
-                            return;
-                          }
-                          _selectedItem.matrix = matrix;
-                          _selectedItem.notifier.value = matrix;
-                        },
-                        child: Stack(children: _boardWidgets),
-                      ),
+                  child: AspectRatio(
+                    aspectRatio: 1 / boardRatio,
+                    child: MatrixGestureDetector(
+                      onScaleStart: () {},
+                      onScaleEnd: () {},
+                      onMatrixUpdate: (
+                        state,
+                        matrix,
+                        translationDeltaMatrix,
+                        scaleDeltaMatrix,
+                        rotationDeltaMatrix,
+                      ) {
+                        if (_selectedAction != ActionItem.imageItem &&
+                            _selectedAction != ActionItem.textItem) {
+                          return;
+                        }
+                        if (_selectedItem == BoardItem.none) {
+                          return;
+                        }
+                        if (_selectedItem.id != state.id) {
+                          state.id = _selectedItem.id;
+                          state.update(_selectedItem.matrix);
+                          return;
+                        }
+                        _selectedItem.matrix = matrix;
+                        _selectedItem.notifier.value = matrix;
+                      },
+                      child: Stack(children: _boardWidgets),
                     ),
                   ),
                 ),
@@ -268,6 +268,123 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     return list;
   }
 
+  Widget boardItemBorder() {
+    return Positioned(
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      child: Container(
+        decoration:
+            BoxDecoration(border: Border.all(color: Colors.black, width: 2)),
+        child: Container(
+          decoration:
+              BoxDecoration(border: Border.all(color: Colors.white, width: 1)),
+        ),
+      ),
+    );
+  }
+
+  EdgeInsets boardItemMargin() {
+    return const EdgeInsets.all(4.0);
+  }
+
+  Widget removeButton() {
+    return IconButton(
+        icon: const Icon(Icons.delete),
+        onPressed: () {
+          _boardItems.removeWhere((element) => element == _selectedItem);
+          setState(() {
+            _syncMapWidget();
+          });
+        });
+  }
+
+  Widget bringToFrontButton() {
+    return IconButton(
+        icon: const Icon(Icons.arrow_upward),
+        onPressed: () {
+          var item = _selectedItem;
+          int index =
+              _boardItems.indexWhere((element) => element == _selectedItem);
+          int nextIndex = index + 1;
+          if (index >= 0 && nextIndex < _boardItems.length) {
+            var nextItem = _boardItems[nextIndex];
+            int tempId = item.lastUpdate;
+            item.lastUpdate = nextItem.lastUpdate;
+            nextItem.lastUpdate = tempId;
+          }
+          setState(() {
+            _boardWidgets = _mapBoardWidgets(_boardItems);
+          });
+        });
+  }
+
+  Widget putToBackButton() {
+    return IconButton(
+        icon: const Icon(Icons.arrow_downward),
+        onPressed: () {
+          var item = _selectedItem;
+          int index =
+              _boardItems.indexWhere((element) => element == _selectedItem);
+          int prevIndex = index - 1;
+          if (index >= 0 && prevIndex < _boardItems.length) {
+            var prevItem = _boardItems[prevIndex];
+            int tempId = item.lastUpdate;
+            item.lastUpdate = prevItem.lastUpdate;
+            prevItem.lastUpdate = tempId;
+          }
+          setState(() {
+            _boardWidgets = _mapBoardWidgets(_boardItems);
+          });
+        });
+  }
+
+  Widget boardBackgroundButton() {
+    return IconButton(
+        icon: const Icon(Icons.image),
+        onPressed: () {
+          _pickBackground();
+        });
+  }
+
+  Future<void> _pickBackground() async {
+    final Map<String, dynamic>? result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BackgroundPage(),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null) return;
+    setState(() {
+      boardImage = result['image'];
+    });
+  }
+
+  Widget boardBackground() {
+    var background = boardImage.isEmpty
+        ? SizedBox()
+        : Image.asset(
+            boardPath(boardImage),
+            fit: BoxFit.cover,
+          );
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Container(
+          width: screenSize.width,
+          height: screenSize.width * boardRatio,
+          child: background,
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [Expanded(child: SizedBox()), boardBackgroundButton()],
+        ),
+      ],
+    );
+  }
+
   /// Text
   Future<void> _pickText(BoardItem item) async {
     final Map<String, dynamic>? result = await Navigator.of(context).push(
@@ -304,7 +421,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     return Transform(
       transform: item.notifier.value,
       child: Container(
-        margin: const EdgeInsets.all(5.0),
+        margin: boardItemMargin(),
         child: Container(
           child: _textWidget(item),
         ),
@@ -321,22 +438,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Positioned(
-                top: 0,
-                bottom: 0,
-                right: 0,
-                left: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 1)),
-                  child: Container(
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 1)),
-                  ),
-                ),
-              ),
+              boardItemBorder(),
               Container(
-                margin: const EdgeInsets.all(5.0),
+                margin: boardItemMargin(),
                 child: Container(
                   child: _textWidget(item),
                 ),
@@ -373,20 +477,14 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       children: [
         Row(
           children: [
-            IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  _boardItems
-                      .removeWhere((element) => element == _selectedItem);
-                  setState(() {
-                    _syncMapWidget();
-                  });
-                }),
+            removeButton(),
             IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   _pickText(_selectedItem);
                 }),
+            bringToFrontButton(),
+            putToBackButton(),
           ],
         ),
         SizedBox(
@@ -455,7 +553,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     return Transform(
       transform: item.notifier.value,
       child: Container(
-        margin: const EdgeInsets.all(5.0),
+        margin: boardItemMargin(),
         child: Container(
           child: _imageWidget(item),
         ),
@@ -472,22 +570,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Positioned(
-                top: 0,
-                bottom: 0,
-                right: 0,
-                left: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 1)),
-                  child: Container(
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 1)),
-                  ),
-                ),
-              ),
+              boardItemBorder(),
               Container(
-                margin: const EdgeInsets.all(5.0),
+                margin: boardItemMargin(),
                 child: Container(
                   child: _imageWidget(item),
                 ),
@@ -523,7 +608,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         return errorImageWidget(message: 'This image error');
       });
     } else if (item.isStickerItem) {
-      imageWidget = Image.asset(imagePath(item.sticker!), errorBuilder:
+      imageWidget = Image.asset(stickerPath(item.sticker!), errorBuilder:
           (BuildContext context, Object error, StackTrace? stackTrace) {
         return errorImageWidget(message: 'This image error');
       });
@@ -550,37 +635,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       children: [
         Row(
           children: [
-            IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  _boardItems
-                      .removeWhere((element) => element == _selectedItem);
-                  setState(() {
-                    _syncMapWidget();
-                  });
-                }),
-            IconButton(
-                icon: const Icon(Icons.arrow_upward),
-                onPressed: () {
-                  // if (_currentAction != ActionItem.imageItem ||
-                  //     _selectedItem == BoardItem.none) {
-                  //   return;
-                  // }
-                  // var item = _selectedItem;
-                  // int index = _boardItems.indexWhere((element) => element == _selectedItem);
-                  // int nextIndex = index + 1;
-                  // if (index >= 0 && nextIndex < _boardItems.length) {
-                  //   var nextItem = _boardItems[nextIndex];
-                  //   int tempId = item.lastUpdate;
-                  //   item.lastUpdate = nextItem.lastUpdate;
-                  //   nextItem.lastUpdate = tempId;
-                  // }
-                  // setState(() {
-                  //   _boardWidgets = _mapBoardWidgets(_boardItems);
-                  // });
-                }),
-            IconButton(
-                icon: const Icon(Icons.arrow_downward), onPressed: () {}),
+            removeButton(),
+            bringToFrontButton(),
+            putToBackButton(),
           ],
         ),
       ],
