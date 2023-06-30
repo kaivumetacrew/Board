@@ -16,7 +16,7 @@ class _TextPageState extends State<TextPage> {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
   final ScrollController fontListScrollCtrl = ScrollController();
-  String itemText = '';
+  String? itemText;
   List<String> fontList = [
     'BabasNeue',
     'Fasthand',
@@ -28,17 +28,17 @@ class _TextPageState extends State<TextPage> {
     'PlayfairDisplay',
     'Roboto',
   ];
-  String _selectedFont = '';
+  String? _selectedFont;
 
   @override
   void initState() {
     super.initState();
     _selectedFont = widget.font;
-    if (_selectedFont.isEmpty) {
+    if (_selectedFont?.isEmpty ?? true) {
       _selectedFont = fontList.first;
     }
-    _textController.text = widget.text??'';
-    syncText(widget.text??'');
+    _textController.text = widget.text ?? '';
+    syncText(widget.text ?? '');
   }
 
   @override
@@ -152,7 +152,7 @@ class _TextPageState extends State<TextPage> {
                   SizedBox(
                       width: double.infinity,
                       child: AutoSizeText(
-                        itemText,
+                        itemText ?? '',
                         style: TextStyle(
                           fontFamily: fontList[index],
                           fontSize: 20,

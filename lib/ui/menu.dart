@@ -1,5 +1,4 @@
-import 'package:board/ui/board.dart';
-import 'package:board/ui/board_stickers.dart';
+import 'package:board/ui/board/board.dart';
 import 'package:flutter/material.dart';
 
 import '../res/color.dart';

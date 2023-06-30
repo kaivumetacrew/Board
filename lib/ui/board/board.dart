@@ -7,10 +7,11 @@ import 'package:board/ui/board_text.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../util/asset.dart';
-import '../util/gesture_detector.dart';
+import '../../util/asset.dart';
+import '../../util/color.dart';
+import '../widget/draw.dart';
+import '../widget/gesture_detector.dart';
 import 'board_model.dart';
-import 'widget/draw.dart';
 
 class BoardPage extends StatefulWidget {
   BoardPage({super.key});
@@ -20,27 +21,22 @@ class BoardPage extends StatefulWidget {
 }
 
 class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
-
   final List<BoardItem> _boardItems = [];
-  String boardImage = '';
+  String? _boardImage;
+  String? _boardColor;
   List<Widget> _boardWidgets = [];
-  late Size screenSize;
+  late Size _screenSize;
+  double _boardWidth = 0;
+  double _boardHeight = 0;
+  final double _boardRatio = 3 / 4;
 
-  double boardWidth = 0;
-  double boardHeight = 0;
-  double boardRatio = 4 / 3;
-  Alignment focalPoint = Alignment.center;
   late AnimationController animationController;
   BoardItem _selectedItem = BoardItem.none;
   ActionItem _selectedAction = ActionItem.none;
 
-  double opacity = 1.0;
-  StrokeCap strokeType = StrokeCap.round;
-  String _selectedFont = '';
-  double _strokeWidth = 3.0;
   Color _selectedDrawColor = Colors.black;
   Color _selectedTextColor = Colors.black;
-  List<Color> _colorList = [
+  final List<Color> _colorList = [
     Colors.black,
     Colors.red,
     Colors.blue,
@@ -48,17 +44,16 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     Colors.yellow,
     Colors.purple
   ];
-
-  void _clearPaint() {
-    _drawController.clear();
-  }
-
   final DrawController _drawController = DrawController(
     penStrokeWidth: 3,
     penColor: Colors.black,
     exportBackgroundColor: Colors.transparent,
     exportPenColor: Colors.black,
   );
+
+  void _clearPaint() {
+    _drawController.clear();
+  }
 
   @override
   void initState() {
@@ -79,14 +74,14 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    screenSize = MediaQuery.of(context).size;
+    _screenSize = MediaQuery.of(context).size;
   }
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    boardWidth = screenSize.width;
-    boardHeight = boardWidth * boardRatio;
+    _screenSize = MediaQuery.of(context).size;
+    _boardWidth = _screenSize.width;
+    _boardHeight = _screenSize.width / _boardRatio;
     _drawController.onDrawEnd = () => {_onDrawEnd()};
 
     return Scaffold(
@@ -101,7 +96,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                 SizedBox(
                   width: double.infinity,
                   child: AspectRatio(
-                    aspectRatio: 1 / boardRatio,
+                    aspectRatio: _boardRatio,
                     child: MatrixGestureDetector(
                       onScaleStart: () {},
                       onScaleEnd: () {},
@@ -177,6 +172,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       color: Colors.white,
       height: 80,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: list,
       ),
     );
@@ -240,55 +236,6 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     return const SizedBox();
   }
 
-  ///
-  void _syncMapWidget() {
-    _boardWidgets = _mapBoardWidgets(_boardItems);
-  }
-
-  List<Widget> _mapBoardWidgets(List<BoardItem> items) {
-    items.sort((a, b) => a.lastUpdate.compareTo(b.lastUpdate));
-    var list = items.map((e) {
-      if (e.isTextItem) {
-        if (e.equal(_selectedItem)) {
-          return _animatedTextWidget(e);
-        }
-        return _positionedTextWidget(e);
-      }
-      if (e.isImageItem || e.isStickerItem) {
-        if (e.equal(_selectedItem)) {
-          return _animatedImageWidget(e);
-        }
-        return _positionedImageWidget(e);
-      }
-      if (e.isDrawItem) {
-        return _drawPointWidget(e);
-      }
-      return errorImageWidget();
-    }).toList();
-    return list;
-  }
-
-  Widget boardItemBorder() {
-    return Positioned(
-      top: 0,
-      bottom: 0,
-      right: 0,
-      left: 0,
-      child: Container(
-        decoration:
-            BoxDecoration(border: Border.all(color: Colors.black, width: 2)),
-        child: Container(
-          decoration:
-              BoxDecoration(border: Border.all(color: Colors.white, width: 1)),
-        ),
-      ),
-    );
-  }
-
-  EdgeInsets boardItemMargin() {
-    return const EdgeInsets.all(4.0);
-  }
-
   Widget removeButton() {
     return IconButton(
         icon: const Icon(Icons.delete),
@@ -340,6 +287,55 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         });
   }
 
+  ///
+  void _syncMapWidget() {
+    _boardWidgets = _mapBoardWidgets(_boardItems);
+  }
+
+  List<Widget> _mapBoardWidgets(List<BoardItem> items) {
+    items.sort((a, b) => a.lastUpdate.compareTo(b.lastUpdate));
+    var list = items.map((e) {
+      if (e.isTextItem) {
+        if (e.equal(_selectedItem)) {
+          return _animatedTextWidget(e);
+        }
+        return _positionedTextWidget(e);
+      }
+      if (e.isImageItem || e.isStickerItem) {
+        if (e.equal(_selectedItem)) {
+          return _animatedImageWidget(e);
+        }
+        return _positionedImageWidget(e);
+      }
+      if (e.isDrawItem) {
+        return _drawPointWidget(e);
+      }
+      return errorImageWidget();
+    }).toList();
+    return list;
+  }
+
+  Widget boardItemBorder() {
+    return Positioned(
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      child: Container(
+        decoration:
+            BoxDecoration(border: Border.all(color: Colors.black, width: 2)),
+        child: Container(
+          decoration:
+              BoxDecoration(border: Border.all(color: Colors.white, width: 1)),
+        ),
+      ),
+    );
+  }
+
+  EdgeInsets boardItemMargin() {
+    return const EdgeInsets.all(4.0);
+  }
+
   Widget boardBackgroundButton() {
     return IconButton(
         icon: const Icon(Icons.image),
@@ -356,30 +352,52 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       ),
     );
     if (result == null) return;
-    setState(() {
-      boardImage = result['image'];
-    });
+    String? image = result['image'];
+    if (image?.isNotEmpty ?? false) {
+      setState(() {
+        _boardImage = image;
+        _boardColor = '';
+      });
+    }
+    String? color = result['color'];
+    if (color?.isNotEmpty ?? false) {
+      setState(() {
+        _boardColor = color;
+        _boardImage = '';
+      });
+    }
   }
 
   Widget boardBackground() {
-    var background = boardImage.isEmpty
-        ? SizedBox()
-        : Image.asset(
-            boardPath(boardImage),
-            fit: BoxFit.cover,
-          );
+    Widget backgroundWidget;
+    if (_boardImage?.isNotEmpty ?? false) {
+      backgroundWidget = Image.asset(
+        boardPath(_boardImage!),
+        fit: BoxFit.cover,
+      );
+    } else if (_boardColor?.isNotEmpty ?? false) {
+      backgroundWidget = Container(
+        color: fromHex(_boardColor!),
+      );
+    } else {
+      backgroundWidget = Container(color: Colors.white);
+    }
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Container(
-          width: screenSize.width,
-          height: screenSize.width * boardRatio,
-          child: background,
+          width: _boardWidth,
+          height: _boardHeight,
+          child: backgroundWidget,
         ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: [Expanded(child: SizedBox()), boardBackgroundButton()],
+          children: [
+            Expanded(child: SizedBox()),
+            boardBackgroundButton(),
+          ],
         ),
       ],
     );
@@ -397,7 +415,6 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     String text = result['text'];
     String font = result['font'];
     if (text.isEmpty || font.isEmpty) return;
-    _selectedFont = font;
     if (item == BoardItem.none) {
       var item = BoardItem(_boardItems.length)
         ..text = text
@@ -652,9 +669,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         fullscreenDialog: true,
       ),
     );
-    if (result == null) return;
-    String sticker = result['sticker'];
-    if (sticker.isEmpty) return;
+
+    String? sticker = result?['sticker'];
+    if (sticker?.isEmpty ?? true) return;
 
     var item = BoardItem(_boardItems.length)
       ..sticker = sticker
@@ -745,7 +762,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     }
     return DrawWidget(
       key: const Key('signature'),
-      height: screenSize.width * boardRatio,
+      height: _boardHeight,
       controller: _drawController,
       backgroundColor: Colors.yellow,
     );
