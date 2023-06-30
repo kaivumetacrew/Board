@@ -4,6 +4,7 @@ import 'package:board/ui/widget/draw.dart';
 import 'package:flutter/material.dart';
 
 class BoardItem {
+
   int id;
 
   // Text
@@ -12,8 +13,10 @@ class BoardItem {
   Color textColor = Colors.black;
 
   // Image
-  String? assetPath;
   File? file;
+
+  // Sticker
+  String? sticker;
 
   // Draw
   List<Point> points = [];
@@ -22,6 +25,7 @@ class BoardItem {
   StrokeCap strokeCap = StrokeCap.round;
   StrokeJoin strokeJoin = StrokeJoin.round;
 
+  //
   // Position
   ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
   bool isLockRotate = true;
@@ -54,6 +58,8 @@ class BoardItem {
   bool get isTextItem => text != null && text!.isNotEmpty;
 
   bool get isImageItem => file != null;
+
+  bool get isStickerItem => sticker != null;
 
   bool get isDrawItem => points.isNotEmpty;
 }

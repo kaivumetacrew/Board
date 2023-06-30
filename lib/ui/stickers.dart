@@ -1,5 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:board/ui/widget/textfield.dart';
 import 'package:flutter/material.dart';
 
 import '../util/asset.dart';
@@ -13,19 +11,24 @@ class StickerPage extends StatefulWidget {
 
 class _StickerPageState extends State<StickerPage> {
 
-  List<String> stickerList = ['','',''];
-
+  List<String> stickerList = [
+    '01.png',
+    '03.png',
+    '07.png',
+    '10.png',
+    '13.png',
+    '16.png',
+  ];
 
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Text")),
+      appBar: AppBar(title: const Text("Sticker")),
       body: Column(
         children: [
           Expanded(child: stickerListWidget(),),
@@ -38,8 +41,7 @@ class _StickerPageState extends State<StickerPage> {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       shrinkWrap: false,
-      padding: const EdgeInsets.only(left: 0, right: 0),
-
+      padding: const EdgeInsets.all(1),
       itemCount: stickerList.length,
       itemBuilder: (context, index) {
         var item = stickerList[index];
@@ -47,13 +49,16 @@ class _StickerPageState extends State<StickerPage> {
           onTap: () {
             setState(() {
               Navigator.pop(context, {
-                'text': '',
+                'sticker': item,
               });
             });
           },
           child: AspectRatio(
             aspectRatio: 1,
-            child: Image.asset(stickerPath('01.png')),
+            child: Padding(
+              padding: EdgeInsets.all(1),
+              child: Image.asset(imagePath('image1.jpg')),
+            ),
           ),
         );
       },

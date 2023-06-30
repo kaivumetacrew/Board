@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:board/res/color.dart';
 import 'package:board/ui/board_text.dart';
+import 'package:board/ui/stickers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'widget/draw.dart';
+import '../util/asset.dart';
 import '../util/gesture_detector.dart';
 import 'board_model.dart';
+import 'widget/draw.dart';
 
 class BoardPage extends StatefulWidget {
   BoardPage({super.key});
@@ -133,9 +135,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                     width: double.infinity, height: 1, color: ColorRes.text),
                 Expanded(
                     child: Container(
-                  width: double.infinity,
+                      width: double.infinity,
                   padding: const EdgeInsets.all(4.0),
-                  child: _toolWidget(),
+                  child: _dynamicToolWidget(),
                 )),
                 Container(
                     width: double.infinity, height: 1, color: ColorRes.text),
@@ -153,9 +155,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
-  /**
-   * Bottom toolbar
-   */
+  /// Bottom action bar
   Widget _actionBar() {
     List<Widget> list = [];
     list.add(_actionButton(ActionItem.textItem, (isSelected) async {
@@ -164,7 +164,9 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     list.add(_actionButton(ActionItem.imageItem, (isSelected) {
       _pickImage();
     }));
-    list.add(_actionButton(ActionItem.stickerItem, (isSelected) {}));
+    list.add(_actionButton(ActionItem.stickerItem, (isSelected) {
+      _pickSticker();
+    }));
     list.add(_actionButton(ActionItem.drawItem, (isSelected) {
       if (isSelected) {
         _selectedItem = BoardItem.none;
@@ -224,10 +226,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
-  /**
-   *
-   */
-  Widget _toolWidget() {
+  ///
+  Widget _dynamicToolWidget() {
     if (_selectedAction == ActionItem.textItem) {
       return _textToolWidget();
     }
@@ -240,9 +240,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     return const SizedBox();
   }
 
-  /**
-   *
-   */
+  ///
   void _syncMapWidget() {
     _boardWidgets = _mapBoardWidgets(_boardItems);
   }
@@ -256,7 +254,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         }
         return _positionedTextWidget(e);
       }
-      if (e.isImageItem) {
+      if (e.isImageItem || e.isStickerItem) {
         if (e.equal(_selectedItem)) {
           return _animatedImageWidget(e);
         }
@@ -265,14 +263,43 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       if (e.isDrawItem) {
         return _drawPointWidget(e);
       }
-      return const Text('error item');
+      return errorImageWidget();
     }).toList();
     return list;
   }
 
-  /**
-   * Text
-   */
+  /// Text
+  Future<void> _pickText(BoardItem item) async {
+    final Map<String, dynamic>? result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TextPage(text: item.text),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null) return;
+    String text = result['text'];
+    String font = result['font'];
+    if (text.isEmpty || font.isEmpty) return;
+    _selectedFont = font;
+    if (item == BoardItem.none) {
+      var item = BoardItem(_boardItems.length)
+        ..text = text
+        ..font = font
+        ..textColor = _selectedTextColor
+        ..lastUpdate = DateTime.now().millisecondsSinceEpoch;
+
+      _boardItems.add(item);
+      _selectedItem = item;
+    }
+    {
+      _selectedItem.text = text;
+    }
+    _selectedAction = ActionItem.textItem;
+    setState(() {
+      _syncMapWidget();
+    });
+  }
+
   Widget _positionedTextWidget(BoardItem item) {
     return Transform(
       transform: item.notifier.value,
@@ -399,39 +426,31 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> _pickText(BoardItem item) async {
-    final Map<String, dynamic>? result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TextPage(text: item.text),
-        fullscreenDialog: true,
-      ),
-    );
-    if (result == null) return;
-    String text = result['text'];
-    String font = result['font'];
-    if (text.isEmpty || font.isEmpty) return;
-    _selectedFont = font;
-    if(item  == BoardItem.none){
+  /// Image
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 4000,
+        maxHeight: 4000,
+        imageQuality: 100,
+      );
       var item = BoardItem(_boardItems.length)
-        ..text = text
-        ..font = font
-        ..textColor = _selectedTextColor
+        ..file = File(pickedFile!.path!)
         ..lastUpdate = DateTime.now().millisecondsSinceEpoch;
 
-      _boardItems.add(item);
       _selectedItem = item;
-    }{
-      _selectedItem.text = text;
+      _boardItems.add(item);
+      _selectedAction = ActionItem.imageItem;
+      setState(() {
+        _syncMapWidget();
+      });
+    } catch (e) {
+      setState(() {});
     }
-    _selectedAction = ActionItem.textItem;
-    setState(() {
-      _syncMapWidget();
-    });
   }
 
-  /**
-   * Image
-   */
   Widget _positionedImageWidget(BoardItem item) {
     return Transform(
       transform: item.notifier.value,
@@ -480,13 +499,38 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
+  Widget errorImageWidget({String message = 'item error'}) {
+    return Container(
+      width: 100,
+      height: 100,
+      color: Colors.red,
+      child: Center(
+        widthFactor: double.infinity,
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
   Widget _imageWidget(BoardItem item) {
-    var imageWidget = Image.file(item.file!, errorBuilder:
-        (BuildContext context, Object error, StackTrace? stackTrace) {
-      return const Center(
-        child: Text('This image type is not supported'),
-      );
-    });
+    Widget imageWidget;
+    if (item.isImageItem) {
+      imageWidget = Image.file(item.file!, errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
+        return errorImageWidget(message: 'This image error');
+      });
+    } else if (item.isStickerItem) {
+      imageWidget = Image.asset(imagePath(item.sticker!), errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
+        return errorImageWidget(message: 'This image error');
+      });
+    } else {
+      return errorImageWidget();
+    }
+
     return GestureDetector(
       child: imageWidget,
       onTap: () {
@@ -543,39 +587,30 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    try {
-      final XFile? pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 4000,
-        maxHeight: 4000,
-        imageQuality: 100,
-      );
-      var item = BoardItem(_boardItems.length)
-        ..file = File(pickedFile!.path!)
-        ..lastUpdate = DateTime.now().millisecondsSinceEpoch;
+  /// Sticker
+  Future<void> _pickSticker() async {
+    final Map<String, dynamic>? result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => StickerPage(),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null) return;
+    String sticker = result['sticker'];
+    if (sticker.isEmpty) return;
 
-      _selectedItem = item;
-      _boardItems.add(item);
-      _selectedAction = ActionItem.imageItem;
-      setState(() {
-        _syncMapWidget();
-      });
-    } catch (e) {
-      setState(() {});
-    }
+    var item = BoardItem(_boardItems.length)
+      ..sticker = sticker
+      ..lastUpdate = DateTime.now().millisecondsSinceEpoch;
+    _boardItems.add(item);
+    _selectedItem = item;
+    _selectedAction = ActionItem.imageItem;
+    setState(() {
+      _syncMapWidget();
+    });
   }
 
-  /**
-   * Sticker
-   */
-  
-  
-  
-  /**
-   * Draw
-   */
+  /// Draw
   final ScrollController colorListScrollCtrl = ScrollController();
 
   Widget _drawPointWidget(BoardItem item) {
