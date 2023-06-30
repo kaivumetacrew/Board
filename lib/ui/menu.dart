@@ -2,6 +2,7 @@ import 'package:board/ui/board/board.dart';
 import 'package:flutter/material.dart';
 
 import '../res/color.dart';
+import 'board/board2.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -22,6 +23,9 @@ class _MenuPageState extends State<MenuPage> {
           children: <Widget>[
             menuButton('New board', () {
               push(BoardPage());
+            }),
+            menuButton('New board 2', () {
+              push(BoardPage2());
             }),
             menuButton('My boards', () {}),
           ],

@@ -16,7 +16,7 @@ class BoardView extends StatefulWidget {
 
   final BoardController controller;
 
-  BoardView({
+  const BoardView({
     Key? key,
     required this.controller,
   }) : super(key: key);
@@ -40,7 +40,7 @@ class BoardViewState extends State<BoardView> {
 
   String? _boardImage;
 
-  String? _boardColor;
+  String? _boardColor = '#FFCDD2';
 
   BoardItem _selectedItem = BoardItem.none;
 
@@ -48,7 +48,7 @@ class BoardViewState extends State<BoardView> {
 
   List<Widget> _boardWidgets = [];
 
-  DrawController _drawController = DrawController(
+  final DrawController _drawController = DrawController(
     penStrokeWidth: 3,
     penColor: Colors.black,
     exportBackgroundColor: Colors.transparent,
@@ -58,7 +58,7 @@ class BoardViewState extends State<BoardView> {
   @override
   void initState() {
     super.initState();
-    updateWidgetSize();
+
   }
 
   @override
@@ -75,6 +75,7 @@ class BoardViewState extends State<BoardView> {
 
   @override
   Widget build(BuildContext context) {
+    updateWidgetSize();
     return Stack(
       children: [
         boardBackground(),

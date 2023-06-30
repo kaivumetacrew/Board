@@ -13,6 +13,7 @@ import '../../util/color.dart';
 import '../widget/draw.dart';
 import '../widget/gesture_detector.dart';
 import 'board_model.dart';
+import 'board_widget.dart';
 
 class BoardPage extends StatefulWidget {
   BoardPage({super.key});
@@ -116,24 +117,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     }
   }
 
-  Widget imageButton({
-    IconData? icon,
-    Color backgroundColor = Colors.grey,
-    required VoidCallback onPressed,
-  }) {
-    var iconWidget = icon == null ? const SizedBox() : Icon(icon);
-    return GestureDetector(
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.all(1),
-          child: Container(
-            color: backgroundColor,
-            width: 36,
-            height: 36,
-            child: iconWidget,
-          ),
-        ));
-  }
+
 
   Widget phoneLayout() {
     return Stack(
@@ -888,31 +872,3 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 }
 
-class ActionItem {
-  int id;
-  IconData icon;
-  String text;
-  bool selectable = false;
-
-  ActionItem(this.id, this.icon, this.text, {this.selectable = false});
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ActionItem && runtimeType == other.runtimeType && id == other.id;
-
-  @override
-  int get hashCode => id.hashCode;
-
-  static ActionItem none = ActionItem(-1, Icons.abc, 'none');
-
-  static ActionItem textItem = ActionItem(1, Icons.abc, 'text');
-
-  static ActionItem imageItem = ActionItem(2, Icons.image, 'image');
-
-  static ActionItem stickerItem =
-      ActionItem(3, Icons.emoji_emotions, 'sticker');
-
-  static ActionItem drawItem =
-      ActionItem(4, Icons.draw, 'draw', selectable: true);
-}
