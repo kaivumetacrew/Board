@@ -5,6 +5,7 @@ import 'package:board/ui/board_background.dart';
 import 'package:board/ui/board_stickers.dart';
 import 'package:board/ui/board_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../util/asset.dart';
@@ -29,7 +30,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   double _boardWidth = 0;
   double _boardHeight = 0;
   final double _boardRatio = 3 / 4;
-
+  bool isFold = false;
+  late Widget layout;
   late AnimationController animationController;
   BoardItem _selectedItem = BoardItem.none;
   ActionItem _selectedAction = ActionItem.none;
@@ -63,6 +65,10 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 
   @override
@@ -74,79 +80,185 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _screenSize = MediaQuery.of(context).size;
+    updateSize();
   }
 
   @override
   Widget build(BuildContext context) {
-    _screenSize = MediaQuery.of(context).size;
-    _boardWidth = _screenSize.width;
-    _boardHeight = _screenSize.width / _boardRatio;
+    updateSize();
     _drawController.onDrawEnd = () => {_onDrawEnd()};
-
+    updateSize();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("Board")),
       body: SafeArea(
-        child: Stack(
+        child: layout,
+      ),
+    );
+  }
+
+  void updateSize() {
+    _screenSize = MediaQuery.of(context).size;
+
+    debugPrint('board_app width: ${_screenSize.width}');
+    debugPrint('board_app height: ${_screenSize.height}');
+    var phoneRatio = 10 / 16;
+    var deviceRatio = _screenSize.width / _screenSize.height;
+    //isFold = phoneRatio <= deviceRatio;
+    if (isFold) {
+      _boardWidth = _screenSize.width * _boardRatio;
+      _boardHeight = _screenSize.height;
+      layout = tabletLayout();
+    } else {
+      _boardWidth = _screenSize.width;
+      _boardHeight = _screenSize.width / _boardRatio;
+      layout = phoneLayout();
+    }
+  }
+
+  Widget imageButton({
+    IconData? icon,
+    Color backgroundColor = Colors.grey,
+    required VoidCallback onPressed,
+  }) {
+    var iconWidget = icon == null ? const SizedBox() : Icon(icon);
+    return GestureDetector(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(1),
+          child: Container(
+            color: backgroundColor,
+            width: 36,
+            height: 36,
+            child: iconWidget,
+          ),
+        ));
+  }
+
+  Widget phoneLayout() {
+    return Stack(
+      children: [
+        boardBackground(),
+        Column(
           children: [
-            boardBackground(),
-            Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: AspectRatio(
-                    aspectRatio: _boardRatio,
-                    child: MatrixGestureDetector(
-                      onScaleStart: () {},
-                      onScaleEnd: () {},
-                      onMatrixUpdate: (
-                        state,
-                        matrix,
-                        translationDeltaMatrix,
-                        scaleDeltaMatrix,
-                        rotationDeltaMatrix,
-                      ) {
-                        if (_selectedAction != ActionItem.imageItem &&
-                            _selectedAction != ActionItem.textItem) {
-                          return;
-                        }
-                        if (_selectedItem == BoardItem.none) {
-                          return;
-                        }
-                        if (_selectedItem.id != state.id) {
-                          state.id = _selectedItem.id;
-                          state.update(_selectedItem.matrix);
-                          return;
-                        }
-                        _selectedItem.matrix = matrix;
-                        _selectedItem.notifier.value = matrix;
-                      },
-                      child: Stack(children: _boardWidgets),
-                    ),
-                  ),
+            SizedBox(
+              width: double.infinity,
+              child: AspectRatio(
+                aspectRatio: _boardRatio,
+                child: MatrixGestureDetector(
+                  onScaleStart: () {},
+                  onScaleEnd: () {},
+                  onMatrixUpdate: (
+                    state,
+                    matrix,
+                    translationDeltaMatrix,
+                    scaleDeltaMatrix,
+                    rotationDeltaMatrix,
+                  ) {
+                    if (_selectedAction != ActionItem.imageItem &&
+                        _selectedAction != ActionItem.textItem) {
+                      return;
+                    }
+                    if (_selectedItem == BoardItem.none) {
+                      return;
+                    }
+                    if (_selectedItem.id != state.id) {
+                      state.id = _selectedItem.id;
+                      state.update(_selectedItem.matrix);
+                      return;
+                    }
+                    _selectedItem.matrix = matrix;
+                    _selectedItem.notifier.value = matrix;
+                  },
+                  child: Stack(children: _boardWidgets),
                 ),
-                Container(
-                    width: double.infinity, height: 1, color: ColorRes.text),
-                Expanded(
-                    child: Container(
-                      width: double.infinity,
-                  padding: const EdgeInsets.all(4.0),
-                  child: _dynamicToolWidget(),
-                )),
-                Container(
-                    width: double.infinity, height: 1, color: ColorRes.text),
-                _actionBar()
-              ],
+              ),
             ),
+            Container(width: double.infinity, height: 1, color: ColorRes.text),
+            Expanded(
+              child: SizedBox(
+                width: double.infinity,
+                //padding: const EdgeInsets.symmetric(horizontal:4.0,vertical: 2.0),
+                child: Column(
+                  children: [
+                    boardBackgroundButton(),
+                    _dynamicToolWidget(),
+                  ],
+                ),
+              ),
+            ),
+            Container(width: double.infinity, height: 1, color: ColorRes.text),
+            _actionBar()
+          ],
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          child: _actionDrawWidget(),
+        ),
+      ],
+    );
+  }
+
+  Widget tabletLayout() {
+    return Row(
+      children: [
+        Stack(
+          children: [
             Positioned(
               top: 0,
               left: 0,
-              child: _actionDrawWidget(),
+              child: boardBackground(),
+            ),
+            Container(
+              height: double.infinity,
+              child: AspectRatio(
+                aspectRatio: _boardRatio,
+                child: MatrixGestureDetector(
+                  onScaleStart: () {},
+                  onScaleEnd: () {},
+                  onMatrixUpdate: (
+                    state,
+                    matrix,
+                    translationDeltaMatrix,
+                    scaleDeltaMatrix,
+                    rotationDeltaMatrix,
+                  ) {
+                    if (_selectedAction != ActionItem.imageItem &&
+                        _selectedAction != ActionItem.textItem) {
+                      return;
+                    }
+                    if (_selectedItem == BoardItem.none) {
+                      return;
+                    }
+                    if (_selectedItem.id != state.id) {
+                      state.id = _selectedItem.id;
+                      state.update(_selectedItem.matrix);
+                      return;
+                    }
+                    _selectedItem.matrix = matrix;
+                    _selectedItem.notifier.value = matrix;
+                  },
+                  child: Stack(children: _boardWidgets),
+                ),
+              ),
             ),
           ],
         ),
-      ),
+        Container(
+          height: double.infinity,
+          width: 2,
+          color: Colors.grey,
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              _actionBar(),
+              _dynamicToolWidget(),
+            ],
+          ),
+        )
+      ],
     );
   }
 
@@ -168,6 +280,12 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         _syncMapWidget();
       }
     }));
+    if (isFold) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: list,
+      );
+    }
     return Container(
       color: Colors.white,
       height: 80,
@@ -184,7 +302,43 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   ) {
     Color iconColor = (item.selectable && _selectedAction == item)
         ? ColorRes.primary
-        : ColorRes.lightGray;
+        : Colors.grey;
+    if (isFold) {
+      return Row(
+        children: <Widget>[
+          IconButton(
+            icon: Icon(item.icon),
+            color: iconColor,
+            onPressed: () {
+              setState(() {
+                if (!item.selectable) {
+                  _selectedAction = ActionItem.none;
+                  callback(false);
+                  return;
+                }
+                if (_selectedAction != item) {
+                  _selectedAction = item;
+                  callback(true);
+                  return;
+                }
+                _selectedAction = ActionItem.none;
+                callback(false);
+              });
+            },
+          ),
+          Expanded(
+            child: Text(
+              item.text,
+              style: TextStyle(
+                color: iconColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          )
+        ],
+      );
+    }
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -237,8 +391,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget removeButton() {
-    return IconButton(
-        icon: const Icon(Icons.delete),
+    return imageButton(
+        icon: Icons.delete,
         onPressed: () {
           _boardItems.removeWhere((element) => element == _selectedItem);
           setState(() {
@@ -248,8 +402,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget bringToFrontButton() {
-    return IconButton(
-        icon: const Icon(Icons.arrow_upward),
+    return imageButton(
+        icon: Icons.arrow_upward,
         onPressed: () {
           var item = _selectedItem;
           int index =
@@ -268,8 +422,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget putToBackButton() {
-    return IconButton(
-        icon: const Icon(Icons.arrow_downward),
+    return imageButton(
+        icon: Icons.arrow_downward,
         onPressed: () {
           var item = _selectedItem;
           int index =
@@ -337,8 +491,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget boardBackgroundButton() {
-    return IconButton(
-        icon: const Icon(Icons.image),
+    return imageButton(
+        icon: Icons.aspect_ratio,
         onPressed: () {
           _pickBackground();
         });
@@ -382,24 +536,10 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     } else {
       backgroundWidget = Container(color: Colors.white);
     }
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Container(
-          width: _boardWidth,
-          height: _boardHeight,
-          child: backgroundWidget,
-        ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(child: SizedBox()),
-            boardBackgroundButton(),
-          ],
-        ),
-      ],
+    return SizedBox(
+      width: _boardWidth,
+      height: _boardHeight,
+      child: backgroundWidget,
     );
   }
 
@@ -495,8 +635,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         Row(
           children: [
             removeButton(),
-            IconButton(
-                icon: const Icon(Icons.edit),
+            imageButton(
+                icon: Icons.edit,
                 onPressed: () {
                   _pickText(_selectedItem);
                 }),
@@ -504,39 +644,14 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
             putToBackButton(),
           ],
         ),
-        SizedBox(
-          height: 40,
-          width: double.infinity,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            controller: colorListScrollCtrl,
-            shrinkWrap: true,
-            padding: const EdgeInsets.only(left: 0, right: 0),
-            itemCount: _colorList.length,
-            itemBuilder: (context, index) {
-              var color = _colorList[index];
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    if (_selectedItem.isTextItem) {
-                      _selectedItem.textColor = color;
-                      _syncMapWidget();
-                    }
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 4.0, vertical: 2.0),
-                  child: Container(
-                    height: 36,
-                    width: 36,
-                    color: color,
-                  ),
-                ),
-              );
-            },
-          ),
-        )
+        _colorPickerWidget((color) {
+          setState(() {
+            if (_selectedItem.isTextItem) {
+              _selectedItem.textColor = color;
+              _syncMapWidget();
+            }
+          });
+        }),
       ],
     );
   }
@@ -685,7 +800,6 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   /// Draw
-  final ScrollController colorListScrollCtrl = ScrollController();
 
   Widget _drawPointWidget(BoardItem item) {
     return Container(
@@ -706,8 +820,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       children: [
         Row(
           children: [
-            IconButton(
-                icon: const Icon(Icons.undo),
+            imageButton(
+                icon: Icons.undo,
                 onPressed: () {
                   var item = _boardItems.reversed
                       .firstWhere((element) => element.points.isNotEmpty);
@@ -718,40 +832,32 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                 }),
           ],
         ),
-        SizedBox(
-          height: 40,
-          width: double.infinity,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            controller: colorListScrollCtrl,
-            shrinkWrap: true,
-            padding: const EdgeInsets.only(left: 0, right: 0),
-            itemCount: _colorList.length,
-            itemBuilder: (context, index) {
-              var color = _colorList[index];
-              return _drawToolColorWidget(color);
-            },
-          ),
-        )
+        _colorPickerWidget((color) {
+          setState(() {
+            _selectedDrawColor = color;
+            _drawController.penColor = color;
+          });
+        }),
       ],
     );
   }
 
-  Widget _drawToolColorWidget(Color color) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedDrawColor = color;
-          _drawController.penColor = color;
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-        child: Container(
-          height: 36,
-          width: 36,
-          color: color,
-        ),
+  Widget _colorPickerWidget(Function(Color) onTap) {
+    return SizedBox(
+      height: 38,
+      width: double.infinity,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(left: 0, right: 0),
+        itemCount: _colorList.length,
+        itemBuilder: (context, index) {
+          var color = _colorList[index];
+          return imageButton(
+              backgroundColor: color,
+              onPressed: () {
+                onTap(color);
+              });
+        },
       ),
     );
   }
@@ -780,10 +886,6 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       _syncMapWidget();
     });
   }
-
-/**
- *
- */
 }
 
 class ActionItem {
