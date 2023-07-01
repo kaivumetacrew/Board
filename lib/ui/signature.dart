@@ -153,8 +153,10 @@ class SignatureState extends State<Signature> {
 
     // IF WIDGET IS USED WITHOUT DIMENSIONS, WE WILL FALLBACK TO SCREENSIZE
     // DIMENSIONS
-    final double _maxSafeWidth = maxWidth == double.infinity ? screenSize!.width : maxWidth;
-    final double _maxSafeHeight = maxHeight == double.infinity ? screenSize!.height : maxHeight;
+    final double _maxSafeWidth =
+        maxWidth == double.infinity ? screenSize!.width : maxWidth;
+    final double _maxSafeHeight =
+        maxHeight == double.infinity ? screenSize!.height : maxHeight;
 
     //SAVE POINT ONLY IF IT IS IN THE SPECIFIED BOUNDARIES
     if ((screenSize?.width == null || o.dx > 0 && o.dx < _maxSafeWidth) &&
@@ -190,7 +192,7 @@ class SignatureState extends State<Signature> {
   /// METHOD THAT WILL CLEANUP ANY REMNANT POINTER AFTER DISABLING
   /// WIDGET
   void _ensurePointerCleanup() {
-    if(widget.controller.disabled && activePointerId != null){
+    if (widget.controller.disabled && activePointerId != null) {
       // WIDGET HAS BEEN DISABLED DURING DRAWING.
       // CANCEL CURRENT DRAW
       activePointerId = null;
@@ -273,7 +275,7 @@ class SignatureController extends ValueNotifier<List<Point>> {
     List<Point>? points,
     this.disabled = false,
     this.penColor = Colors.black,
-    this.strokeCap =StrokeCap.butt,
+    this.strokeCap = StrokeCap.butt,
     this.strokeJoin = StrokeJoin.miter,
     this.penStrokeWidth = 3.0,
     this.exportBackgroundColor,
@@ -291,7 +293,6 @@ class SignatureController extends ValueNotifier<List<Point>> {
 
   /// boldness of a signature line
   final double penStrokeWidth;
-
 
   /// shape of line ends
   final ui.StrokeCap strokeCap;
@@ -350,41 +351,47 @@ class SignatureController extends ValueNotifier<List<Point>> {
 
   /// The biggest x value for all points.
   /// Will return `null` if there are no points.
-  double? get maxXValue => isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(max);
+  double? get maxXValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(max);
 
   /// The biggest y value for all points.
   /// Will return `null` if there are no points.
-  double? get maxYValue => isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(max);
+  double? get maxYValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(max);
 
   /// The smallest x value for all points.
   /// Will return `null` if there are no points.
-  double? get minXValue => isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(min);
+  double? get minXValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(min);
 
   /// The smallest y value for all points.
   /// Will return `null` if there are no points.
-  double? get minYValue => isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(min);
+  double? get minYValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(min);
 
   /// Calculates a default height based on existing points.
   /// Will return `null` if there are no points.
-  int? get defaultHeight => isEmpty ? null : (maxYValue! - minYValue! + penStrokeWidth * 2).toInt();
+  int? get defaultHeight =>
+      isEmpty ? null : (maxYValue! - minYValue! + penStrokeWidth * 2).toInt();
 
   /// Calculates a default width based on existing points.
   /// Will return `null` if there are no points.
-  int? get defaultWidth => isEmpty ? null : (maxXValue! - minXValue! + penStrokeWidth * 2).toInt();
+  int? get defaultWidth =>
+      isEmpty ? null : (maxXValue! - minXValue! + penStrokeWidth * 2).toInt();
 
   /// Calculates a default width based on existing points.
   /// Will return `null` if there are no points.
   List<Point>? _translatePoints(List<Point> points) => isEmpty
       ? null
       : points
-      .map((Point p) => Point(
-      Offset(
-        p.offset.dx - minXValue! + penStrokeWidth,
-        p.offset.dy - minYValue! + penStrokeWidth,
-      ),
-      p.type,
-      p.pressure))
-      .toList();
+          .map((Point p) => Point(
+              Offset(
+                p.offset.dx - minXValue! + penStrokeWidth,
+                p.offset.dy - minYValue! + penStrokeWidth,
+              ),
+              p.type,
+              p.pressure))
+          .toList();
 
   /// Clear the canvas
   void clear() {
@@ -431,19 +438,20 @@ class SignatureController extends ValueNotifier<List<Point>> {
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final ui.Canvas canvas = Canvas(recorder)
-      ..translate(-(minXValue! - penStrokeWidth), -(minYValue! - penStrokeWidth));
+      ..translate(
+          -(minXValue! - penStrokeWidth), -(minYValue! - penStrokeWidth));
     if (exportBackgroundColor != null) {
       final ui.Paint paint = Paint()..color = exportBackgroundColor!;
       canvas.drawPaint(paint);
     }
     if (width != null || height != null) {
       assert(
-      ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
-      'Exported width cannot be smaller than actual width',
+        ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
+        'Exported width cannot be smaller than actual width',
       );
       assert(
-      ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
-      'Exported height cannot be smaller than actual height',
+        ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
+        'Exported height cannot be smaller than actual height',
       );
       //IF WIDTH OR HEIGHT IS SPECIFIED WE NEED TO CENTER DRAWING
       //WE WILL MOVE THE DRAWING BY HALF OF THE REMAINING SPACE IF
@@ -492,12 +500,12 @@ class SignatureController extends ValueNotifier<List<Point>> {
 
     if (width != null || height != null) {
       assert(
-      ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
-      'Exported width cannot be smaller than actual width',
+        ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
+        'Exported width cannot be smaller than actual width',
       );
       assert(
-      ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
-      'Exported height cannot be smaller than actual height',
+        ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
+        'Exported height cannot be smaller than actual height',
       );
     }
 
@@ -529,7 +537,8 @@ class SignatureController extends ValueNotifier<List<Point>> {
     // set the image background color
     img.fill(signatureImage, bColor);
 
-    final double xOffset = ((width ?? defaultWidth!) - defaultWidth!).toDouble() / 2;
+    final double xOffset =
+        ((width ?? defaultWidth!) - defaultWidth!).toDouble() / 2;
     final double yOffset =
         ((height ?? defaultHeight!) - defaultHeight!).toDouble() / 2;
 
@@ -568,7 +577,8 @@ class SignatureController extends ValueNotifier<List<Point>> {
       return null;
     }
 
-    String colorToHex(Color c) => '#${c.value.toRadixString(16).padLeft(8, '0')}';
+    String colorToHex(Color c) =>
+        '#${c.value.toRadixString(16).padLeft(8, '0')}';
 
     String formatPoint(Point p) =>
         '${p.offset.dx.toStringAsFixed(2)},${p.offset.dy.toStringAsFixed(2)}';
@@ -590,8 +600,6 @@ class SignatureController extends ValueNotifier<List<Point>> {
         'xmlns="http://www.w3.org/2000/svg"'
         '>\n$polylines\n</svg>';
   }
-
-
 }
 
 Future push(context, widget) {
@@ -649,7 +657,7 @@ class _SignaturePageState extends State<SignaturePage> {
     }
 
     final Uint8List? data =
-    await _controller.toPngBytes(height: 1000, width: 1000);
+        await _controller.toPngBytes(height: 1000, width: 1000);
     if (data == null) {
       return;
     }
@@ -671,7 +679,6 @@ class _SignaturePageState extends State<SignaturePage> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

@@ -3,16 +3,16 @@ import 'package:board/ui/widget/textfield.dart';
 import 'package:flutter/material.dart';
 
 class TextPage extends StatefulWidget {
-  TextPage({super.key,  this.text, this.font = ''});
+  TextPage({super.key, this.text, this.font = ''});
 
   String? text;
-String font ='';
+  String font = '';
+
   @override
   State<TextPage> createState() => _TextPageState();
 }
 
 class _TextPageState extends State<TextPage> {
-
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
   final ScrollController fontListScrollCtrl = ScrollController();
@@ -43,7 +43,6 @@ class _TextPageState extends State<TextPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: const Text("Text")),
       body: Center(
@@ -75,7 +74,6 @@ class _TextPageState extends State<TextPage> {
     return TextFieldOutline(
       controller: _textController,
       focusNode: _textFocusNode,
-
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       hintText: "Type text here",
@@ -100,7 +98,7 @@ class _TextPageState extends State<TextPage> {
             child: Text('Add', style: TextStyle(color: Colors.white))),
       ),
       onTap: () {
-        if(_textController.text.isEmpty){
+        if (_textController.text.isEmpty) {
           return;
         }
         Navigator.pop(context, {

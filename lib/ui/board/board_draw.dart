@@ -14,7 +14,7 @@ class DrawWidget extends StatefulWidget {
   const DrawWidget({
     required this.controller,
     Key? key,
-    this.backgroundColor = Colors.grey,
+    this.backgroundColor = Colors.transparent,
     this.dynamicPressureSupported = false,
     this.width,
     this.height,
@@ -70,7 +70,7 @@ class DrawState extends State<DrawWidget> {
         //NO-OP
       },
       child: Container(
-        decoration: BoxDecoration(color: widget.backgroundColor),
+        color: widget.backgroundColor,
         child: Listener(
             onPointerDown: (PointerDownEvent event) {
               if (!widget.controller.disabled &&
@@ -153,8 +153,10 @@ class DrawState extends State<DrawWidget> {
 
     // IF WIDGET IS USED WITHOUT DIMENSIONS, WE WILL FALLBACK TO SCREENSIZE
     // DIMENSIONS
-    final double _maxSafeWidth = maxWidth == double.infinity ? screenSize!.width : maxWidth;
-    final double _maxSafeHeight = maxHeight == double.infinity ? screenSize!.height : maxHeight;
+    final double _maxSafeWidth =
+        maxWidth == double.infinity ? screenSize!.width : maxWidth;
+    final double _maxSafeHeight =
+        maxHeight == double.infinity ? screenSize!.height : maxHeight;
 
     //SAVE POINT ONLY IF IT IS IN THE SPECIFIED BOUNDARIES
     if ((screenSize?.width == null || o.dx > 0 && o.dx < _maxSafeWidth) &&
@@ -209,7 +211,7 @@ class DrawController extends ValueNotifier<List<Point>> {
     this.penColor = Colors.black,
     this.strokeCap = StrokeCap.butt,
     this.strokeJoin = StrokeJoin.miter,
-    this.penStrokeWidth = 3.0,
+    this.penStrokeWidth = 3,
     this.exportBackgroundColor,
     this.exportPenColor,
     this.onDrawStart,
@@ -283,41 +285,47 @@ class DrawController extends ValueNotifier<List<Point>> {
 
   /// The biggest x value for all points.
   /// Will return `null` if there are no points.
-  double? get maxXValue => isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(max);
+  double? get maxXValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(max);
 
   /// The biggest y value for all points.
   /// Will return `null` if there are no points.
-  double? get maxYValue => isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(max);
+  double? get maxYValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(max);
 
   /// The smallest x value for all points.
   /// Will return `null` if there are no points.
-  double? get minXValue => isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(min);
+  double? get minXValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dx).reduce(min);
 
   /// The smallest y value for all points.
   /// Will return `null` if there are no points.
-  double? get minYValue => isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(min);
+  double? get minYValue =>
+      isEmpty ? null : points.map((Point p) => p.offset.dy).reduce(min);
 
   /// Calculates a default height based on existing points.
   /// Will return `null` if there are no points.
-  int? get defaultHeight => isEmpty ? null : (maxYValue! - minYValue! + penStrokeWidth * 2).toInt();
+  int? get defaultHeight =>
+      isEmpty ? null : (maxYValue! - minYValue! + penStrokeWidth * 2).toInt();
 
   /// Calculates a default width based on existing points.
   /// Will return `null` if there are no points.
-  int? get defaultWidth => isEmpty ? null : (maxXValue! - minXValue! + penStrokeWidth * 2).toInt();
+  int? get defaultWidth =>
+      isEmpty ? null : (maxXValue! - minXValue! + penStrokeWidth * 2).toInt();
 
   /// Calculates a default width based on existing points.
   /// Will return `null` if there are no points.
   List<Point>? _translatePoints(List<Point> points) => isEmpty
       ? null
       : points
-      .map((Point p) => Point(
-      Offset(
-        p.offset.dx - minXValue! + penStrokeWidth,
-        p.offset.dy - minYValue! + penStrokeWidth,
-      ),
-      p.type,
-      p.pressure))
-      .toList();
+          .map((Point p) => Point(
+              Offset(
+                p.offset.dx - minXValue! + penStrokeWidth,
+                p.offset.dy - minYValue! + penStrokeWidth,
+              ),
+              p.type,
+              p.pressure))
+          .toList();
 
   /// Clear the canvas
   void clear() {
@@ -364,19 +372,20 @@ class DrawController extends ValueNotifier<List<Point>> {
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final ui.Canvas canvas = Canvas(recorder)
-      ..translate(-(minXValue! - penStrokeWidth), -(minYValue! - penStrokeWidth));
+      ..translate(
+          -(minXValue! - penStrokeWidth), -(minYValue! - penStrokeWidth));
     if (exportBackgroundColor != null) {
       final ui.Paint paint = Paint()..color = exportBackgroundColor!;
       canvas.drawPaint(paint);
     }
     if (width != null || height != null) {
       assert(
-      ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
-      'Exported width cannot be smaller than actual width',
+        ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
+        'Exported width cannot be smaller than actual width',
       );
       assert(
-      ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
-      'Exported height cannot be smaller than actual height',
+        ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
+        'Exported height cannot be smaller than actual height',
       );
       //IF WIDTH OR HEIGHT IS SPECIFIED WE NEED TO CENTER DRAWING
       //WE WILL MOVE THE DRAWING BY HALF OF THE REMAINING SPACE IF
@@ -425,15 +434,14 @@ class DrawController extends ValueNotifier<List<Point>> {
 
     if (width != null || height != null) {
       assert(
-      ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
-      'Exported width cannot be smaller than actual width',
+        ((width ?? defaultWidth!) - defaultWidth!) >= 0.0,
+        'Exported width cannot be smaller than actual width',
       );
       assert(
-      ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
-      'Exported height cannot be smaller than actual height',
+        ((height ?? defaultHeight!) - defaultHeight!) >= 0.0,
+        'Exported height cannot be smaller than actual height',
       );
     }
-
 
     final int pColor = img.Color.fromRgb(
       exportPenColor?.red ?? penColor.red,
@@ -503,7 +511,8 @@ class DrawController extends ValueNotifier<List<Point>> {
       return null;
     }
 
-    String colorToHex(Color c) => '#${c.value.toRadixString(16).padLeft(8, '0')}';
+    String colorToHex(Color c) =>
+        '#${c.value.toRadixString(16).padLeft(8, '0')}';
 
     String formatPoint(Point p) =>
         '${p.offset.dx.toStringAsFixed(2)},${p.offset.dy.toStringAsFixed(2)}';
@@ -538,9 +547,9 @@ class PointPainter extends CustomPainter {
         super() {
     _penStyle
       ..color = strokeColor
-      ..strokeWidth = strokeWidth;
-      //..strokeCap = strokeCap
-      //.strokeJoin = strokeJoin;
+      ..strokeWidth = strokeWidth
+      ..strokeCap = strokeCap
+      ..strokeJoin = strokeJoin;
   }
 
   final Paint _penStyle;
@@ -591,7 +600,6 @@ class Point {
   /// type of user display finger movement
   PointType type;
 }
-
 
 /// type of user display finger movement
 enum PointType {
@@ -694,10 +702,7 @@ class _SampleDrawPageState extends State<SampleDrawPage> {
       )),
     );
   }
-
-
 }
-
 
 /*
 /// Styles to use for line endings.

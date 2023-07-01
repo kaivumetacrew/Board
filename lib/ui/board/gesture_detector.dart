@@ -249,11 +249,10 @@ class MatrixGestureDetectorState extends State<MatrixGestureDetector> {
     matrix = Matrix4.identity();
   }
 
-  void update(Matrix4 matrix){
+  void update(Matrix4 matrix) {
     this.matrix = matrix;
   }
 }
-
 
 typedef _OnUpdate<T> = T Function(T oldValue, T newValue);
 

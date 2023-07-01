@@ -11,7 +11,6 @@ class BackgroundPage extends StatefulWidget {
 }
 
 class _BackgroundPageState extends State<BackgroundPage> {
-
   List<String> imageList = [
     'board1.jpg',
     'board2.jpg',

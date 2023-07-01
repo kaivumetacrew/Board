@@ -10,7 +10,6 @@ class StickerPage extends StatefulWidget {
 }
 
 class _StickerPageState extends State<StickerPage> {
-
   List<String> stickerList = [
     '01.png',
     '03.png',
@@ -31,7 +30,9 @@ class _StickerPageState extends State<StickerPage> {
       appBar: AppBar(title: const Text("Sticker")),
       body: Column(
         children: [
-          Expanded(child: stickerListWidget(),),
+          Expanded(
+            child: stickerListWidget(),
+          ),
         ],
       ),
     );
@@ -39,7 +40,8 @@ class _StickerPageState extends State<StickerPage> {
 
   Widget stickerListWidget() {
     return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       shrinkWrap: false,
       padding: const EdgeInsets.all(1),
       itemCount: stickerList.length,

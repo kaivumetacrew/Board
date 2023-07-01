@@ -55,7 +55,7 @@ class TextFieldOutline extends StatefulWidget {
     this.unFocusBorderColor = Colors.grey,
     this.maxLength,
     this.margin = EdgeInsets.zero,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     this.fillColor = Colors.transparent,
     this.onSuffixIconClick,
     this.onPrefixIconClick,
@@ -88,7 +88,7 @@ class _TextFieldOutlineState extends State<TextFieldOutline> {
 
   @override
   Widget build(BuildContext context) {
-    var realHeight = widget.height +  widget.margin.vertical;
+    var realHeight = widget.height + widget.margin.vertical;
     return SizedBox(
       height: realHeight,
       child: Padding(
@@ -138,17 +138,17 @@ class _TextFieldOutlineState extends State<TextFieldOutline> {
             counterText: "",
             border: widget.controller.text.isNotEmpty
                 ? OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide(
-                color: widget.focusBorderColor,
-              ),
-            )
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(
+                      color: widget.focusBorderColor,
+                    ),
+                  )
                 : OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide(
-                color: widget.unFocusBorderColor,
-              ),
-            ),
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(
+                      color: widget.unFocusBorderColor,
+                    ),
+                  ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
@@ -157,60 +157,60 @@ class _TextFieldOutlineState extends State<TextFieldOutline> {
             ),
             enabledBorder: widget.controller.text.isNotEmpty
                 ? OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide(
-                color: widget.unFocusBorderColor,
-              ),
-            )
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(
+                      color: widget.unFocusBorderColor,
+                    ),
+                  )
                 : OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide(
-                color: widget.unFocusBorderColor,
-              ),
-            ),
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(
+                      color: widget.unFocusBorderColor,
+                    ),
+                  ),
             prefixIcon: widget.prefixIcon != null
                 ? GestureDetector(
-              onTap: widget.onPrefixIconClick,
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: Center(
+                    onTap: widget.onPrefixIconClick,
                     child: SizedBox(
-                        child: Image.asset(
-                          widget.prefixIcon!,
-                          width: 24,
-                          height: 24,
-                          color: _hasError
-                              ? Colors.red
-                              : widget.focusNode.hasFocus ||
-                              widget.controller.text.isNotEmpty
-                              ? widget.focusBorderColor
-                              : widget.unFocusBorderColor,
-                        ))),
-              ),
-            )
+                      width: 24,
+                      height: 24,
+                      child: Center(
+                          child: SizedBox(
+                              child: Image.asset(
+                        widget.prefixIcon!,
+                        width: 24,
+                        height: 24,
+                        color: _hasError
+                            ? Colors.red
+                            : widget.focusNode.hasFocus ||
+                                    widget.controller.text.isNotEmpty
+                                ? widget.focusBorderColor
+                                : widget.unFocusBorderColor,
+                      ))),
+                    ),
+                  )
                 : null,
             suffixIcon: widget.suffixIcon != null
                 ? GestureDetector(
-              onTap: widget.onSuffixIconClick,
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: Center(
+                    onTap: widget.onSuffixIconClick,
                     child: SizedBox(
-                        child: Image.asset(
-                          widget.suffixIcon!,
-                          width: 24,
-                          height: 24,
-                          color: _hasError
-                              ? Colors.red
-                              : widget.focusNode.hasFocus ||
-                              widget.controller.text.isNotEmpty
-                              ? widget.focusBorderColor
-                              : widget.unFocusBorderColor,
-                        ))),
-              ),
-            )
+                      width: 24,
+                      height: 24,
+                      child: Center(
+                          child: SizedBox(
+                              child: Image.asset(
+                        widget.suffixIcon!,
+                        width: 24,
+                        height: 24,
+                        color: _hasError
+                            ? Colors.red
+                            : widget.focusNode.hasFocus ||
+                                    widget.controller.text.isNotEmpty
+                                ? widget.focusBorderColor
+                                : widget.unFocusBorderColor,
+                      ))),
+                    ),
+                  )
                 : null,
             hintText: widget.hintText,
             hintStyle: widget.hintStyle ??

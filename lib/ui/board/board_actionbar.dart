@@ -1,42 +1,25 @@
-import 'package:board/ui/board/board_state.dart';
 import 'package:flutter/material.dart';
 
-import '../../res/color.dart';
-import 'board_model.dart';
-
-class BoardPage2 extends StatefulWidget {
-  BoardPage2({super.key});
-
-  @override
-  State<BoardPage2> createState() => _BoardPage2State();
+class ActionBarController extends ValueNotifier<ActionItem> {
+  ActionBarController() : super(ActionItem.none);
 }
 
-class _BoardPage2State extends State<BoardPage2> with TickerProviderStateMixin {
-  BoardController boardController = BoardController();
+class ActionBar extends StatefulWidget {
+  ActionBar({super.key});
+
+  @override
+  State<ActionBar> createState() => _ActionBarState();
+}
+
+class _ActionBarState extends State<ActionBar> {
   ActionItem _selectedAction = ActionItem.none;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("Board")),
-      body: SafeArea(
-        child: Column(
-          children: [
-            BoardView(controller: boardController),
-            Container(width: double.infinity, height: 1, color: Colors.grey),
-            Expanded(
-              child: Column(
-                children: [],
-              ),
-            ),
-            Container(width: double.infinity, height: 1, color: Colors.grey),
-            _actionBar()
-          ],
-        ),
-      ),
-    );
+    return SizedBox();
   }
 
+  ///
   Widget _actionBar() {
     return Container(
       color: Colors.white,
@@ -44,30 +27,32 @@ class _BoardPage2State extends State<BoardPage2> with TickerProviderStateMixin {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _actionButton(ActionItem.textItem, (isSelected) async {
-            //_pickText(BoardItem.none);
+          /*_actionButton(ActionItem.textItem, (isSelected) {
+            _pickText(BoardItem.none);
           }),
           _actionButton(ActionItem.imageItem, (isSelected) {
-            //_pickImage();
+            _pickGalleryImage();
           }),
           _actionButton(ActionItem.stickerItem, (isSelected) {
-            //_pickSticker();
+            _pickStickerImage();
           }),
           _actionButton(ActionItem.drawItem, (isSelected) {
             if (isSelected) {
-              //_selectedItem = BoardItem.none;
-              //_syncMapWidget();
+              boardController.deselectItem();
+              boardController.startDraw();
+            } else {
+              boardController.stopDraw();
             }
-          })
+          })*/
         ],
       ),
     );
   }
 
   Widget _actionButton(
-      ActionItem item,
-      Function(bool isSelected) callback,
-      ) {
+    ActionItem item,
+    Function(bool isSelected) callback,
+  ) {
     Color iconColor = (item.selectable && _selectedAction == item)
         ? Colors.blue
         : Colors.grey;
@@ -97,7 +82,7 @@ class _BoardPage2State extends State<BoardPage2> with TickerProviderStateMixin {
           ),
           Text(
             item.text,
-            style:  TextStyle(
+            style: TextStyle(
               color: iconColor,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -108,4 +93,38 @@ class _BoardPage2State extends State<BoardPage2> with TickerProviderStateMixin {
     );
   }
 
+  void selectAction(ActionItem actionItem) {
+    setState(() {
+      _selectedAction = actionItem;
+    });
+  }
+}
+
+class ActionItem {
+  int id;
+  IconData icon;
+  String text;
+  bool selectable = false;
+
+  ActionItem(this.id, this.icon, this.text, {this.selectable = false});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ActionItem && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  static ActionItem none = ActionItem(-1, Icons.abc, 'none');
+
+  static ActionItem textItem = ActionItem(1, Icons.abc, 'text');
+
+  static ActionItem imageItem = ActionItem(2, Icons.image, 'image');
+
+  static ActionItem stickerItem =
+      ActionItem(3, Icons.emoji_emotions, 'sticker');
+
+  static ActionItem drawItem =
+      ActionItem(4, Icons.draw, 'draw', selectable: true);
 }
