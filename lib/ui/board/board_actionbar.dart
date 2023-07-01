@@ -1,61 +1,64 @@
 import 'package:flutter/material.dart';
 
 class ActionBarController extends ValueNotifier<ActionItem> {
+  List<ActionItem> items = [
+    ActionItem.textItem,
+    ActionItem.imageItem,
+    ActionItem.stickerItem,
+    ActionItem.drawItem
+  ];
+
   ActionBarController() : super(ActionItem.none);
+
+  void selectAction(ActionItem actionItem) {
+    value = actionItem;
+    notifyListeners();
+  }
 }
 
 class ActionBar extends StatefulWidget {
-  ActionBar({super.key});
+  ActionBarController controller;
+
+  Function(ActionItem item, bool isSelected) onItemTap;
+
+  ActionBar({super.key, required this.controller, required this.onItemTap});
 
   @override
   State<ActionBar> createState() => _ActionBarState();
 }
 
 class _ActionBarState extends State<ActionBar> {
-  ActionItem _selectedAction = ActionItem.none;
+  ActionItem get selectedAction => widget.controller.value;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox();
-  }
-
-  ///
-  Widget _actionBar() {
-    return Container(
-      color: Colors.white,
-      height: 70,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          /*_actionButton(ActionItem.textItem, (isSelected) {
-            _pickText(BoardItem.none);
-          }),
-          _actionButton(ActionItem.imageItem, (isSelected) {
-            _pickGalleryImage();
-          }),
-          _actionButton(ActionItem.stickerItem, (isSelected) {
-            _pickStickerImage();
-          }),
-          _actionButton(ActionItem.drawItem, (isSelected) {
-            if (isSelected) {
-              boardController.deselectItem();
-              boardController.startDraw();
-            } else {
-              boardController.stopDraw();
-            }
-          })*/
-        ],
-      ),
+    List<Widget> widgets = [];
+    for (ActionItem e in widget.controller.items) {
+      e.id = widgets.length + 1;
+      widgets.add(_actionButton(e));
+    }
+    return ValueListenableBuilder(
+      valueListenable: widget.controller,
+      builder: (
+        BuildContext context,
+        ActionItem value,
+        Widget? child,
+      ) {
+        return Container(
+          color: Colors.white,
+          height: 70,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: widgets,
+          ),
+        );
+      },
     );
   }
 
-  Widget _actionButton(
-    ActionItem item,
-    Function(bool isSelected) callback,
-  ) {
-    Color iconColor = (item.selectable && _selectedAction == item)
-        ? Colors.blue
-        : Colors.grey;
+  Widget _actionButton(ActionItem item) {
+    Color iconColor =
+        (item.selectable && selectedAction == item) ? Colors.blue : Colors.grey;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -66,17 +69,17 @@ class _ActionBarState extends State<ActionBar> {
             onPressed: () {
               setState(() {
                 if (!item.selectable) {
-                  _selectedAction = ActionItem.none;
-                  callback(false);
+                  widget.controller.value = ActionItem.none;
+                  widget.onItemTap(item, false);
                   return;
                 }
-                if (_selectedAction != item) {
-                  _selectedAction = item;
-                  callback(true);
+                if (selectedAction != item) {
+                  widget.controller.value = item;
+                  widget.onItemTap(item, true);
                   return;
                 }
-                _selectedAction = ActionItem.none;
-                callback(false);
+                widget.controller.value = ActionItem.none;
+                widget.onItemTap(item, false);
               });
             },
           ),
@@ -92,21 +95,15 @@ class _ActionBarState extends State<ActionBar> {
       ),
     );
   }
-
-  void selectAction(ActionItem actionItem) {
-    setState(() {
-      _selectedAction = actionItem;
-    });
-  }
 }
 
 class ActionItem {
-  int id;
+  int id = -1;
   IconData icon;
   String text;
   bool selectable = false;
 
-  ActionItem(this.id, this.icon, this.text, {this.selectable = false});
+  ActionItem(this.icon, this.text, {this.id = -1, this.selectable = false});
 
   @override
   bool operator ==(Object other) =>
@@ -116,15 +113,13 @@ class ActionItem {
   @override
   int get hashCode => id.hashCode;
 
-  static ActionItem none = ActionItem(-1, Icons.abc, 'none');
+  static ActionItem none = ActionItem(Icons.abc, 'none');
 
-  static ActionItem textItem = ActionItem(1, Icons.abc, 'text');
+  static ActionItem textItem = ActionItem(Icons.abc, 'text');
 
-  static ActionItem imageItem = ActionItem(2, Icons.image, 'image');
+  static ActionItem imageItem = ActionItem(Icons.image, 'image');
 
-  static ActionItem stickerItem =
-      ActionItem(3, Icons.emoji_emotions, 'sticker');
+  static ActionItem stickerItem = ActionItem(Icons.emoji_emotions, 'sticker');
 
-  static ActionItem drawItem =
-      ActionItem(4, Icons.draw, 'draw', selectable: true);
+  static ActionItem drawItem = ActionItem(Icons.draw, 'draw', selectable: true);
 }

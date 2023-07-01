@@ -99,12 +99,10 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
 
   void startDraw() {
     isDrawingNotifier.value = true;
-    isDrawingNotifier.notifyListeners();
   }
 
   void stopDraw() {
     isDrawingNotifier.value = false;
-    isDrawingNotifier.notifyListeners();
   }
 
   void addNewItem(Function(BoardItem) block) {

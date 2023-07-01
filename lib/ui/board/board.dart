@@ -23,9 +23,10 @@ class BoardPage extends StatefulWidget {
 }
 
 class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
-  ActionItem _selectedAction = ActionItem.none;
 
   BoardController boardController = BoardController(items: []);
+
+  ActionBarController actionBarController = ActionBarController();
 
   @override
   void initState() {
@@ -34,23 +35,32 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    boardController.addListener(() {});
     boardController.onItemTap = (item) {
       if (item.isTextItem) {
-        selectAction(ActionItem.textItem);
-      } else if (item.isImageItem) {
-        selectAction(ActionItem.imageItem);
-      } else if (item.isStickerItem) {
-        selectAction(ActionItem.stickerItem);
-      } else if (item.isDrawItem) {
-        selectAction(ActionItem.drawItem);
+        actionBarController.value = (ActionItem.textItem);
+        return;
       }
+      if (item.isImageItem) {
+        actionBarController.value = (ActionItem.imageItem);
+        return;
+      }
+      if (item.isStickerItem) {
+        actionBarController.value = (ActionItem.stickerItem);
+        return;
+      }
+      if (item.isDrawItem) {
+        actionBarController.value = (ActionItem.drawItem);
+        return;
+      }
+      boardController.deselectItem();
+      actionBarController.value = ActionItem.none;
     };
   }
 
   @override
   void dispose() {
     boardController.dispose();
+    actionBarController.dispose();
     super.dispose();
   }
 
@@ -116,17 +126,25 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget _dynamicToolWidget() {
-    if (_selectedAction == ActionItem.textItem) {
-      return _textToolWidget();
-    }
-    if (_selectedAction == ActionItem.imageItem ||
-        _selectedAction == ActionItem.stickerItem) {
-      return _imageToolWidget();
-    }
-    if (_selectedAction == ActionItem.drawItem) {
-      return _drawToolWidget();
-    }
-    return const SizedBox();
+    return ValueListenableBuilder(
+      valueListenable: actionBarController,
+      builder: (
+        BuildContext context,
+        ActionItem value,
+        Widget? child,
+      ) {
+        if (value == ActionItem.textItem) {
+          return _textToolWidget();
+        }
+        if (value == ActionItem.imageItem || value == ActionItem.stickerItem) {
+          return _imageToolWidget();
+        }
+        if (value == ActionItem.drawItem) {
+          return _drawToolWidget();
+        }
+        return const SizedBox();
+      },
+    );
   }
 
   Widget _backgroundButton() {
@@ -194,7 +212,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       selectedItem.text = text;
       boardController.notifyListeners();
     }
-    selectAction(ActionItem.textItem);
+    actionBarController.value = ActionItem.textItem;
   }
 
   /// Image
@@ -212,7 +230,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       boardController.addNewItem((item) {
         item.file = file;
       });
-      selectAction(ActionItem.imageItem);
+      actionBarController.value = ActionItem.imageItem;
     } catch (e) {
       setState(() {});
     }
@@ -226,7 +244,7 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     boardController.addNewItem((item) {
       item.sticker = sticker;
     });
-    selectAction(ActionItem.stickerItem);
+    actionBarController.value = ActionItem.stickerItem;
   }
 
   Widget _imageToolWidget() {
@@ -261,83 +279,34 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
-  ///
+  /// Bottom action bar
   Widget _actionBar() {
-    return Container(
-      color: Colors.white,
-      height: 70,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _actionButton(ActionItem.textItem, (isSelected) {
-            _pickText(BoardItem.none);
-          }),
-          _actionButton(ActionItem.imageItem, (isSelected) {
-            _pickGalleryImage();
-          }),
-          _actionButton(ActionItem.stickerItem, (isSelected) {
-            _pickStickerImage();
-          }),
-          _actionButton(ActionItem.drawItem, (isSelected) {
-            if (isSelected) {
-              boardController.deselectItem();
-              boardController.startDraw();
-            } else {
-              boardController.stopDraw();
-            }
-          })
-        ],
-      ),
+    return ActionBar(
+      controller: actionBarController,
+      onItemTap: (item, isSelected) {
+        if (item == ActionItem.textItem) {
+          _pickText(BoardItem.none);
+          return;
+        }
+        if (item == ActionItem.imageItem) {
+          _pickGalleryImage();
+          return;
+        }
+        if (item == ActionItem.stickerItem) {
+          _pickStickerImage();
+          return;
+        }
+        if (item == ActionItem.drawItem) {
+          if (isSelected) {
+            boardController.deselectItem();
+            boardController.startDraw();
+          } else {
+            boardController.stopDraw();
+          }
+          return;
+        }
+      },
     );
   }
 
-  Widget _actionButton(
-    ActionItem item,
-    Function(bool isSelected) callback,
-  ) {
-    Color iconColor = (item.selectable && _selectedAction == item)
-        ? Colors.blue
-        : Colors.grey;
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(item.icon),
-            color: iconColor,
-            onPressed: () {
-              setState(() {
-                if (!item.selectable) {
-                  _selectedAction = ActionItem.none;
-                  callback(false);
-                  return;
-                }
-                if (_selectedAction != item) {
-                  _selectedAction = item;
-                  callback(true);
-                  return;
-                }
-                _selectedAction = ActionItem.none;
-                callback(false);
-              });
-            },
-          ),
-          Text(
-            item.text,
-            style: TextStyle(
-              color: iconColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void selectAction(ActionItem actionItem) {
-    setState(() {
-      _selectedAction = actionItem;
-    });
-  }
 }
