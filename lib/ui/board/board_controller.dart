@@ -21,8 +21,11 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   DrawController drawController = DrawController();
   ValueNotifier<bool> isDrawingNotifier = ValueNotifier(false);
   ValueNotifier<bool> isChangeBackgroundNotifier = ValueNotifier(false);
-
   bool get isDrawing => isDrawingNotifier.value;
+  double portraitWidth = 0;
+  double portraitHeight = 0;
+  double landscapeWidth = 0;
+  double landscapeHeight = 0;
 
   @override
   void addListener(VoidCallback listener) {

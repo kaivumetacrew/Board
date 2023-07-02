@@ -189,7 +189,7 @@ class _BoardViewState extends State<BoardView> {
       return;
     }
     _selectedItem.matrix = matrix;
-    _selectedItem.notifier.value = matrix;
+    _selectedItem.matrixNotifier.value = matrix;
   }
 
   /// Callback on finger draw tap up

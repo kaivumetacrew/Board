@@ -23,7 +23,8 @@ class BoardFoldPage extends StatefulWidget {
 }
 
 class _BoardFoldPageState extends State<BoardFoldPage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin
+{
   late Size _screenSize;
   double boardWidth = 0;
   bool isPortrait = true;
@@ -116,9 +117,12 @@ class _BoardFoldPageState extends State<BoardFoldPage>
 
   Widget boardView() {
     if (isPortrait) {
+      var screenWidth = MediaQuery.of(context).size.width;
+      boardController.portraitWidth = screenWidth;
+      boardController.portraitHeight = screenWidth / BoardView.ratio;
       return BoardView(
         key: _widgetKey,
-        width: MediaQuery.of(context).size.width,
+        width: screenWidth,
         boardController: boardController,
       );
     }
@@ -132,14 +136,13 @@ class _BoardFoldPageState extends State<BoardFoldPage>
       onSizeChange: (Size size) {
         if (boardWidth == 0) {
           setState(() {
+            boardController.landscapeWidth = boardWidth;
+            boardController.landscapeHeight = boardWidth / BoardView.ratio;
             boardWidth = size.height * BoardView.ratio;
           });
         }
       },
-      child: Container(
-        key: _widgetKey,
-        color: Colors.yellow,
-      ),
+      child: Container(key: _widgetKey),
     );
   }
 

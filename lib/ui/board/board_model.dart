@@ -32,7 +32,7 @@ class BoardItem {
 
   //
   // Position
-  ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
+  ValueNotifier<Matrix4> matrixNotifier = ValueNotifier(Matrix4.identity());
   bool isLockRotate = true;
   bool isLockScale = true;
   bool isLockMove = true;

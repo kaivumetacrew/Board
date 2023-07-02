@@ -51,7 +51,7 @@ class BoardItemView extends StatelessWidget {
 
   Widget _positionedItem(Widget itemWidget) {
     return Transform(
-      transform: item.notifier.value,
+      transform: item.matrixNotifier.value,
       child: Container(
         margin: boardItemMargin,
         child: Container(
@@ -63,10 +63,10 @@ class BoardItemView extends StatelessWidget {
 
   Widget _animatedItem(Widget itemWidget) {
     return AnimatedBuilder(
-      animation: item.notifier,
+      animation: item.matrixNotifier,
       builder: (ctx, child) {
         return Transform(
-          transform: item.notifier.value,
+          transform: item.matrixNotifier.value,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
