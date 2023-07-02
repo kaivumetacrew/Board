@@ -121,7 +121,6 @@ class _BoardFoldPageState extends State<BoardFoldPage>
       boardController.portraitWidth = screenWidth;
       boardController.portraitHeight = screenWidth / BoardView.ratio;
       return BoardView(
-        key: _widgetKey,
         width: screenWidth,
         boardController: boardController,
       );
