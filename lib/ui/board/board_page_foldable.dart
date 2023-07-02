@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:board/ui/board/board_view.dart';
 import 'package:board/util/state.dart';
 import 'package:board/util/string.dart';
 import 'package:flutter/material.dart';
@@ -13,20 +12,28 @@ import '../board_text.dart';
 import 'board_actionbar.dart';
 import 'board_controller.dart';
 import 'board_model.dart';
+import 'board_view.dart';
 import 'board_widget.dart';
 
-class BoardPage extends StatefulWidget {
-  BoardPage({super.key});
+class BoardFoldPage extends StatefulWidget {
+  BoardFoldPage({super.key});
 
   @override
-  State<BoardPage> createState() => _BoardPageState();
+  State<BoardFoldPage> createState() => _BoardFoldPageState();
 }
 
-class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
+class _BoardFoldPageState extends State<BoardFoldPage>
+    with TickerProviderStateMixin {
+  late Size _screenSize;
+  double boardWidth = 0;
+  bool isPortrait = true;
+  Axis _separatorAxis = Axis.vertical;
+  Axis _actionBarAxis = Axis.horizontal;
+  final GlobalKey _widgetKey = GlobalKey();
   BoardController boardController = BoardController(
     items: [],
+    boardColor: '#E3E9F2',
   );
-
   ActionBarController actionBarController = ActionBarController();
 
   @override
@@ -58,25 +65,36 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   @override
   void dispose() {
     super.dispose();
-    boardController.dispose();
     actionBarController.dispose();
+    boardController.dispose();
+  }
+
+  void updateScreenArgs() {
+    _screenSize = MediaQuery.of(context).size;
+    var phoneRatio = 10 / 16;
+    var deviceRatio = _screenSize.width / _screenSize.height;
+    isPortrait = phoneRatio > deviceRatio;
+    if (isPortrait) {
+      _separatorAxis = Axis.vertical;
+      _actionBarAxis = Axis.horizontal;
+    } else {
+      _separatorAxis = Axis.horizontal;
+      _actionBarAxis = Axis.vertical;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
+    updateScreenArgs();
     return Scaffold(
-      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: const Text("Board")),
+      appBar: AppBar(title: const Text("Board foldable")),
       body: SafeArea(
-        child: Column(
+        child: ColumnIfPortraitElseRow(
+          isPortrait: isPortrait,
           children: [
-            BoardView(
-              boardController: boardController,
-              width: screenSize.width,
-            ),
-            separator(axis: Axis.vertical),
+            boardView(),
+            separator(axis: _separatorAxis),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(1),
@@ -88,10 +106,39 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            separator(axis: Axis.vertical),
+            separator(axis: _separatorAxis),
             _actionBar()
           ],
         ),
+      ),
+    );
+  }
+
+  Widget boardView() {
+    if (isPortrait) {
+      return BoardView(
+        key: _widgetKey,
+        width: MediaQuery.of(context).size.width,
+        boardController: boardController,
+      );
+    }
+    if (boardWidth > 0) {
+      return BoardView(
+        boardController: boardController,
+        width: boardWidth,
+      );
+    }
+    return WidgetSizeOffsetWrapper(
+      onSizeChange: (Size size) {
+        if (boardWidth == 0) {
+          setState(() {
+            boardWidth = size.height * BoardView.ratio;
+          });
+        }
+      },
+      child: Container(
+        key: _widgetKey,
+        color: Colors.yellow,
       ),
     );
   }
@@ -121,9 +168,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget _colorPickerWidget() {
-    return colorPickerWidget(onTap: (color) {
-      boardController.setColor(color);
-    });
+    return colorPickerWidget(
+        isPortrait: isPortrait,
+        onTap: (color) {
+          boardController.setColor(color);
+        });
   }
 
   Widget _dynamicToolWidget() {
@@ -149,7 +198,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget _backgroundButton() {
-    return Row(
+    return RowIfPortraitElseCol(
+      isPortrait: isPortrait,
       children: [
         const Expanded(child: SizedBox()),
         imageButton(
@@ -179,22 +229,25 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   /// Text
   Widget _textToolWidget() {
-    var row1 = Row(
+    return ColumnIfPortraitElseRow(
+      isPortrait: isPortrait,
       children: [
-        _removeButton(),
-        imageButton(
-            icon: Icons.edit,
-            onPressed: () {
-              _pickText(boardController.selectedItem);
-            }),
-        _bringToFrontButton(),
-        _putToBackButton(),
+        RowIfPortraitElseCol(
+          isPortrait: isPortrait,
+          children: [
+            _removeButton(),
+            imageButton(
+                icon: Icons.edit,
+                onPressed: () {
+                  _pickText(boardController.selectedItem);
+                }),
+            _bringToFrontButton(),
+            _putToBackButton(),
+          ],
+        ),
+        _colorPickerWidget(),
       ],
     );
-    return Column(children: [
-      row1,
-      _colorPickerWidget(),
-    ]);
   }
 
   Future<void> _pickText(BoardItem selectedItem) async {
@@ -249,9 +302,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget _imageToolWidget() {
-    return Column(
+    return ColumnIfPortraitElseRow(
+      isPortrait: this.isPortrait,
       children: [
-        Row(
+        RowIfPortraitElseCol(
+          isPortrait: this.isPortrait,
           children: [
             _removeButton(),
             _bringToFrontButton(),
@@ -264,9 +319,11 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   /// Draw
   Widget _drawToolWidget() {
-    return Column(
+    return ColumnIfPortraitElseRow(
+      isPortrait: isPortrait,
       children: [
-        Row(
+        RowIfPortraitElseCol(
+          isPortrait: isPortrait,
           children: [
             imageButton(
                 icon: Icons.undo,
@@ -284,6 +341,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   Widget _actionBar() {
     return ActionBar(
       controller: actionBarController,
+      axis: _actionBarAxis,
+      textVisible: _actionBarAxis == Axis.horizontal,
       onItemTap: (item, isSelected) {
         if (item == ActionItem.textItem) {
           _pickText(BoardItem.none);
@@ -309,5 +368,4 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       },
     );
   }
-
 }

@@ -31,7 +31,8 @@ Widget imageButton({
       ));
 }
 
-Widget colorPickerWidget(Function(String) onTap) {
+Widget colorPickerWidget(
+    {bool isPortrait = false, required Function(String) onTap}) {
   List<String> colorList = [
     '#FFFFFF',
     '#000000',
@@ -58,14 +59,15 @@ Widget colorPickerWidget(Function(String) onTap) {
   ];
 
   var row = 2;
+  var size = (imageButtonSize * row + row * 2);
   return SizedBox(
-    height: imageButtonSize * row + row * 2,
-    width: double.infinity,
+    width: isPortrait ? double.infinity : size,
+    height: isPortrait ? size : double.infinity,
     child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
-        scrollDirection: Axis.horizontal,
+        scrollDirection: isPortrait ? Axis.horizontal : Axis.vertical,
         padding: const EdgeInsets.only(left: 0, right: 0),
         itemCount: colorList.length,
         itemBuilder: (context, index) {

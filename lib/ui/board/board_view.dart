@@ -10,10 +10,16 @@ import 'gesture_detector.dart';
 
 class BoardView extends StatefulWidget {
   BoardController boardController;
+  double width = 0;
+  double height = 0;
+  static const double ratio = 3 / 4;
+  final GlobalKey widgetKey = GlobalKey();
 
   BoardView({
     Key? key,
     required this.boardController,
+    this.width = 0,
+    this.height = 0,
   }) : super(key: key);
 
   @override
@@ -21,18 +27,9 @@ class BoardView extends StatefulWidget {
 }
 
 class _BoardViewState extends State<BoardView> {
-  late Size _screenSize;
-
-  double _boardWidth = 0;
-
-  double _boardHeight = 0;
-
-  final double _boardRatio = 3 / 4;
 
   BoardController get _controller => widget.boardController;
-
   DrawController get _drawController => _controller.drawController;
-
   BoardItem get _selectedItem => _controller.selectedItem;
 
   @override
@@ -41,12 +38,6 @@ class _BoardViewState extends State<BoardView> {
     _drawController.onDrawEnd = () => {_onDrawEnd()};
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.drawController.dispose();
-    _controller.isDrawingNotifier.dispose();
-  }
 
   @override
   void didUpdateWidget(covariant BoardView oldWidget) {
@@ -57,7 +48,6 @@ class _BoardViewState extends State<BoardView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _screenSize = MediaQuery.of(context).size;
   }
 
   @override
@@ -73,9 +63,12 @@ class _BoardViewState extends State<BoardView> {
   }
 
   void updateWidgetSize() {
-    _screenSize = MediaQuery.of(context).size;
-    _boardWidth = _screenSize.width;
-    _boardHeight = _screenSize.width / _boardRatio;
+    if (widget.width > 0 && widget.height == 0) {
+      widget.height = widget.width / BoardView.ratio;
+    }
+    if (widget.width == 0 && widget.height > 0) {
+      widget.width = widget.height * BoardView.ratio;
+    }
   }
 
   /// Board item widgets
@@ -123,8 +116,8 @@ class _BoardViewState extends State<BoardView> {
     }
 
     return SizedBox(
-      width: _boardWidth,
-      height: _boardHeight,
+      width: widget.width,
+      height: widget.height,
       child: background(),
     );
   }
@@ -132,23 +125,21 @@ class _BoardViewState extends State<BoardView> {
   /// Container for board widgets
   Widget boardItemContainer() {
     return SizedBox(
-      width: double.infinity,
-      child: AspectRatio(
-        aspectRatio: _boardRatio,
-        child: MatrixGestureDetector(
-          onScaleStart: () {},
-          onScaleEnd: () {},
-          onMatrixUpdate: onMatrixUpdate,
-          child: ValueListenableBuilder(
-            valueListenable: widget.boardController,
-            builder: (
-              BuildContext context,
-              List<BoardItem> value,
-              Widget? child,
-            ) {
-              return Stack(children: boardItemWidgets);
-            },
-          ),
+      width: widget.width,
+      height: widget.height,
+      child: MatrixGestureDetector(
+        onScaleStart: () {},
+        onScaleEnd: () {},
+        onMatrixUpdate: onMatrixUpdate,
+        child: ValueListenableBuilder(
+          valueListenable: widget.boardController,
+          builder: (
+            BuildContext context,
+            List<BoardItem> value,
+            Widget? child,
+          ) {
+            return Stack(children: boardItemWidgets);
+          },
         ),
       ),
     );
@@ -168,7 +159,7 @@ class _BoardViewState extends State<BoardView> {
             top: 0,
             left: 0,
             child: DrawWidget(
-              height: _boardHeight,
+              height: widget.height,
               controller: _drawController,
             ),
           );

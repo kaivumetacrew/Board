@@ -24,6 +24,19 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
 
   bool get isDrawing => isDrawingNotifier.value;
 
+  @override
+  void addListener(VoidCallback listener) {
+    super.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    drawController.dispose();
+    isDrawingNotifier.dispose();
+    isChangeBackgroundNotifier.dispose();
+    super.dispose();
+  }
+
   void removeSelectedItem() {
     remove(selectedItem);
   }

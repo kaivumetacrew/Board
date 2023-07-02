@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 extension StateExtension on State {
 
@@ -10,5 +11,7 @@ extension StateExtension on State {
       ),
     );
   }
+
+  Size get screenSize => MediaQuery.of(context).size;
 
 }

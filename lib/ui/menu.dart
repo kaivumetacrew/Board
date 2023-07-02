@@ -1,3 +1,4 @@
+import 'package:board/ui/board/board_page_foldable.dart';
 import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,9 @@ class _MenuPageState extends State<MenuPage> {
           children: <Widget>[
             menuButton('New board', () {
               push(BoardPage());
+            }),
+            menuButton('New board (fold)', () {
+              push(BoardFoldPage());
             }),
             menuButton('My boards', () {}),
           ],

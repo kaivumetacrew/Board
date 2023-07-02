@@ -18,10 +18,19 @@ class ActionBarController extends ValueNotifier<ActionItem> {
 
 class ActionBar extends StatefulWidget {
   ActionBarController controller;
-
+  Axis axis;
+  bool textVisible;
+  bool iconVisible;
   Function(ActionItem item, bool isSelected) onItemTap;
 
-  ActionBar({super.key, required this.controller, required this.onItemTap});
+  ActionBar({
+    super.key,
+    this.axis = Axis.horizontal,
+    this.textVisible = true,
+    this.iconVisible = true,
+    required this.controller,
+    required this.onItemTap,
+  });
 
   @override
   State<ActionBar> createState() => _ActionBarState();
@@ -37,6 +46,7 @@ class _ActionBarState extends State<ActionBar> {
       e.id = widgets.length + 1;
       widgets.add(_actionButton(e));
     }
+    double size = 70;
     return ValueListenableBuilder(
       valueListenable: widget.controller,
       builder: (
@@ -46,52 +56,61 @@ class _ActionBarState extends State<ActionBar> {
       ) {
         return Container(
           color: Colors.white,
-          height: 70,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: widgets,
-          ),
+          width: widget.axis == Axis.horizontal ? double.infinity : size,
+          height: widget.axis == Axis.horizontal ? size : double.infinity,
+          child: _buttonContainer(widgets),
         );
       },
     );
   }
 
+  Widget _buttonContainer(List<Widget> children) {
+    if (widget.axis == Axis.horizontal) {
+      return Row(children: children);
+    }
+    return Column(children: children);
+  }
+
   Widget _actionButton(ActionItem item) {
     Color iconColor =
         (item.selectable && selectedAction == item) ? Colors.blue : Colors.grey;
+    List<Widget> components = [];
+    if (widget.iconVisible) {
+      components.add(IconButton(
+        icon: Icon(item.icon),
+        color: iconColor,
+        onPressed: () {
+          setState(() {
+            if (!item.selectable) {
+              widget.controller.value = ActionItem.none;
+              widget.onItemTap(item, false);
+              return;
+            }
+            if (selectedAction != item) {
+              widget.controller.value = item;
+              widget.onItemTap(item, true);
+              return;
+            }
+            widget.controller.value = ActionItem.none;
+            widget.onItemTap(item, false);
+          });
+        },
+      ));
+    }
+    if (widget.textVisible) {
+      components.add(Text(
+        item.text,
+        style: TextStyle(
+          color: iconColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ));
+    }
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(item.icon),
-            color: iconColor,
-            onPressed: () {
-              setState(() {
-                if (!item.selectable) {
-                  widget.controller.value = ActionItem.none;
-                  widget.onItemTap(item, false);
-                  return;
-                }
-                if (selectedAction != item) {
-                  widget.controller.value = item;
-                  widget.onItemTap(item, true);
-                  return;
-                }
-                widget.controller.value = ActionItem.none;
-                widget.onItemTap(item, false);
-              });
-            },
-          ),
-          Text(
-            item.text,
-            style: TextStyle(
-              color: iconColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+        children: components,
       ),
     );
   }
