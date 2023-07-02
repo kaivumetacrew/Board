@@ -28,11 +28,6 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   double landscapeHeight = 0;
 
   @override
-  void addListener(VoidCallback listener) {
-    super.addListener(listener);
-  }
-
-  @override
   void dispose() {
     drawController.dispose();
     isDrawingNotifier.dispose();

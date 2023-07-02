@@ -3,7 +3,6 @@ import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 
 import '../res/color.dart';
-import 'board/board_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -22,13 +21,15 @@ class _MenuPageState extends State<MenuPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            menuButton('New board', () {
+            /*menuButton('New board', () {
               push(BoardPage());
-            }),
-            menuButton('New board (fold)', () {
+            }),*/
+            menuButton('New board', () {
               push(BoardFoldPage());
             }),
-            menuButton('My boards', () {}),
+            /*menuButton('My boards', () {
+
+            }),*/
           ],
         ),
       ),

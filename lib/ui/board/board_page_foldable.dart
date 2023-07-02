@@ -26,7 +26,11 @@ class _BoardFoldPageState extends State<BoardFoldPage>
     with TickerProviderStateMixin
 {
   late Size _screenSize;
-  double boardWidth = 0;
+  double boardDipWidth = 0;
+  double boardBottom = 0;
+  double boardRight = 0;
+  double boardScale = 1;
+
   bool isPortrait = true;
   Axis _separatorAxis = Axis.vertical;
   Axis _actionBarAxis = Axis.horizontal;
@@ -35,12 +39,14 @@ class _BoardFoldPageState extends State<BoardFoldPage>
     items: [],
     boardColor: '#E3E9F2',
   );
-  ActionBarController actionBarController = ActionBarController();
+  ActionBarController actionBarController =
+      ActionBarController(ActionItem.none);
 
   @override
   void initState() {
     super.initState();
     lockPortrait();
+    actionBarController.value = ActionItem.none;
     boardController.onItemTap = (item) {
       if (item.isTextItem) {
         actionBarController.value = (ActionItem.textItem);
@@ -78,6 +84,10 @@ class _BoardFoldPageState extends State<BoardFoldPage>
     if (isPortrait) {
       _separatorAxis = Axis.vertical;
       _actionBarAxis = Axis.horizontal;
+      double boardWidthDip = pixelToDip(BoardView.widthPx);
+      double boardHeightDip = pixelToDip(BoardView.heightPx);
+      boardScale = _screenSize.width / boardWidthDip;
+      boardBottom = ((boardHeightDip * boardScale) - boardHeightDip) / 2;
     } else {
       _separatorAxis = Axis.horizontal;
       _actionBarAxis = Axis.vertical;
@@ -95,6 +105,7 @@ class _BoardFoldPageState extends State<BoardFoldPage>
           isPortrait: isPortrait,
           children: [
             boardView(),
+            boardScaleExpand(),
             separator(axis: _separatorAxis),
             Expanded(
               child: Padding(
@@ -115,29 +126,42 @@ class _BoardFoldPageState extends State<BoardFoldPage>
     );
   }
 
-  Widget boardView() {
+  Widget boardScaleExpand() {
     if (isPortrait) {
-      var screenWidth = MediaQuery.of(context).size.width;
-      boardController.portraitWidth = screenWidth;
-      boardController.portraitHeight = screenWidth / BoardView.ratio;
-      return BoardView(
-        width: screenWidth,
-        boardController: boardController,
+      return Container(
+        width: 50,
+        height: boardBottom,
+        //color: Colors.yellow,
       );
     }
-    if (boardWidth > 0) {
-      return BoardView(
-        boardController: boardController,
-        width: boardWidth,
+    return Container(
+      width: boardRight,
+      height: 50,
+      //color: Colors.yellow,
+    );
+  }
+
+  Widget boardView() {
+    if (isPortrait) {
+      return Transform.scale(
+        scale: boardScale,
+        child: BoardView(boardController: boardController),
+      );
+    }
+    if (boardDipWidth > 0) {
+      return Transform.scale(
+        scale: boardScale,
+        child: BoardView(boardController: boardController),
       );
     }
     return WidgetSizeOffsetWrapper(
       onSizeChange: (Size size) {
-        if (boardWidth == 0) {
+        if (boardDipWidth == 0) {
           setState(() {
-            boardController.landscapeWidth = boardWidth;
-            boardController.landscapeHeight = boardWidth / BoardView.ratio;
-            boardWidth = size.height * BoardView.ratio;
+            double boardWidthDip = pixelToDip(BoardView.widthPx);
+            boardDipWidth = size.height * BoardView.ratio;
+            boardScale = boardDipWidth / boardWidthDip;
+            boardRight = ((boardWidthDip * boardScale) - boardWidthDip) / 2;
           });
         }
       },

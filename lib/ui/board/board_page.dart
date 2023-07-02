@@ -27,7 +27,8 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     items: [],
   );
 
-  ActionBarController actionBarController = ActionBarController();
+  ActionBarController actionBarController =
+      ActionBarController(ActionItem.none);
 
   @override
   void initState() {
@@ -74,7 +75,6 @@ class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
           children: [
             BoardView(
               boardController: boardController,
-              width: screenSize.width,
             ),
             separator(axis: Axis.vertical),
             Expanded(

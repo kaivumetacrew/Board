@@ -8,7 +8,7 @@ class ActionBarController extends ValueNotifier<ActionItem> {
     ActionItem.drawItem
   ];
 
-  ActionBarController() : super(ActionItem.none);
+  ActionBarController(ActionItem item) : super(item);
 
   void selectAction(ActionItem actionItem) {
     value = actionItem;
@@ -117,28 +117,29 @@ class _ActionBarState extends State<ActionBar> {
 }
 
 class ActionItem {
-  int id = -1;
+  int id;
   IconData icon;
   String text;
   bool selectable = false;
 
-  ActionItem(this.icon, this.text, {this.id = -1, this.selectable = false});
+  ActionItem(this.id, this.icon, this.text, {this.selectable = false});
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ActionItem && runtimeType == other.runtimeType && id == other.id;
+      identical(this, other) || other is ActionItem && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
 
-  static ActionItem none = ActionItem(Icons.abc, 'none');
+  static ActionItem none = ActionItem(-1, Icons.abc, 'none');
 
-  static ActionItem textItem = ActionItem(Icons.abc, 'text');
+  static ActionItem textItem = ActionItem(1, Icons.abc, 'text');
 
-  static ActionItem imageItem = ActionItem(Icons.image, 'image');
+  static ActionItem imageItem = ActionItem(2, Icons.image, 'image');
 
-  static ActionItem stickerItem = ActionItem(Icons.emoji_emotions, 'sticker');
+  static ActionItem stickerItem =
+      ActionItem(3, Icons.emoji_emotions, 'sticker');
 
-  static ActionItem drawItem = ActionItem(Icons.draw, 'draw', selectable: true);
+  static ActionItem drawItem =
+      ActionItem(3, Icons.draw, 'draw', selectable: true);
 }

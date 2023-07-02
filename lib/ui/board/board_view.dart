@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../../util/asset.dart';
@@ -10,16 +12,13 @@ import 'gesture_detector.dart';
 
 class BoardView extends StatefulWidget {
   BoardController boardController;
-  double width = 0;
-  double height = 0;
+  static const double widthPx = 1080;
+  static const double heightPx = 1440;
   static const double ratio = 3 / 4;
-  final GlobalKey widgetKey = GlobalKey();
 
   BoardView({
     Key? key,
     required this.boardController,
-    this.width = 0,
-    this.height = 0,
   }) : super(key: key);
 
   @override
@@ -27,9 +26,13 @@ class BoardView extends StatefulWidget {
 }
 
 class _BoardViewState extends State<BoardView> {
+  double widthDip = 0;
+  double heightDip = 0;
 
   BoardController get _controller => widget.boardController;
+
   DrawController get _drawController => _controller.drawController;
+
   BoardItem get _selectedItem => _controller.selectedItem;
 
   @override
@@ -37,7 +40,6 @@ class _BoardViewState extends State<BoardView> {
     super.initState();
     _drawController.onDrawEnd = () => {_onDrawEnd()};
   }
-
 
   @override
   void didUpdateWidget(covariant BoardView oldWidget) {
@@ -63,12 +65,9 @@ class _BoardViewState extends State<BoardView> {
   }
 
   void updateWidgetSize() {
-    if (widget.width > 0 && widget.height == 0) {
-      widget.height = widget.width / BoardView.ratio;
-    }
-    if (widget.width == 0 && widget.height > 0) {
-      widget.width = widget.height * BoardView.ratio;
-    }
+    FlutterView flutterView = View.of(context);
+    widthDip = BoardView.widthPx / flutterView.devicePixelRatio;
+    heightDip = BoardView.heightPx / flutterView.devicePixelRatio;
   }
 
   /// Board item widgets
@@ -92,11 +91,9 @@ class _BoardViewState extends State<BoardView> {
   Widget boardBackgroundListener() {
     return ValueListenableBuilder(
       valueListenable: _controller.isChangeBackgroundNotifier,
-      builder: (
-        BuildContext context,
-        bool value,
-        Widget? child,
-      ) {
+      builder: (BuildContext context,
+          bool value,
+          Widget? child,) {
         return boardBackground();
       },
     );
@@ -114,10 +111,9 @@ class _BoardViewState extends State<BoardView> {
       }
       return Container(color: Colors.white);
     }
-
     return SizedBox(
-      width: widget.width,
-      height: widget.height,
+      width: widthDip,
+      height: heightDip,
       child: background(),
     );
   }
@@ -125,19 +121,17 @@ class _BoardViewState extends State<BoardView> {
   /// Container for board widgets
   Widget boardItemContainer() {
     return SizedBox(
-      width: widget.width,
-      height: widget.height,
+      width: widthDip,
+      height: heightDip,
       child: MatrixGestureDetector(
         onScaleStart: () {},
         onScaleEnd: () {},
         onMatrixUpdate: onMatrixUpdate,
         child: ValueListenableBuilder(
           valueListenable: widget.boardController,
-          builder: (
-            BuildContext context,
-            List<BoardItem> value,
-            Widget? child,
-          ) {
+          builder: (BuildContext context,
+              List<BoardItem> value,
+              Widget? child,) {
             return Stack(children: boardItemWidgets);
           },
         ),
@@ -149,17 +143,16 @@ class _BoardViewState extends State<BoardView> {
   Widget boardPaintingContainer() {
     return ValueListenableBuilder(
       valueListenable: _controller.isDrawingNotifier,
-      builder: (
-        BuildContext context,
-        bool value,
-        Widget? child,
-      ) {
+      builder: (BuildContext context,
+          bool value,
+          Widget? child,) {
         if (value) {
           return Positioned(
             top: 0,
             left: 0,
             child: DrawWidget(
-              height: widget.height,
+              width: widthDip,
+              height: heightDip,
               controller: _drawController,
             ),
           );
@@ -170,13 +163,11 @@ class _BoardViewState extends State<BoardView> {
   }
 
   /// Callback on gesture
-  void onMatrixUpdate(
-    MatrixGestureDetectorState state,
-    Matrix4 matrix,
-    Matrix4 translationDeltaMatrix,
-    Matrix4 scaleDeltaMatrix,
-    Matrix4 rotationDeltaMatrix,
-  ) {
+  void onMatrixUpdate(MatrixGestureDetectorState state,
+      Matrix4 matrix,
+      Matrix4 translationDeltaMatrix,
+      Matrix4 scaleDeltaMatrix,
+      Matrix4 rotationDeltaMatrix,) {
     if (_controller.isDrawing) {
       return;
     }
