@@ -1,49 +1,81 @@
+import 'package:board/util/color.dart';
 import 'package:flutter/material.dart';
+
+const double imageButtonSize = 32;
 
 Widget imageButton({
   IconData? icon,
-  Color backgroundColor = Colors.black12,
+  Color backgroundColor = Colors.white,
   required VoidCallback onPressed,
 }) {
-  var iconWidget = icon == null ? const SizedBox() : Icon(icon);
+  var iconWidget = icon == null
+      ? const SizedBox()
+      : Icon(
+          icon,
+          color: Colors.grey,
+        );
   return GestureDetector(
       onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.all(1),
         child: Container(
-          color: backgroundColor,
-          width: 36,
-          height: 36,
+          decoration: BoxDecoration(
+              //borderRadius: BorderRadius.circular(1),
+              border: Border.all(color: Colors.grey, width: 1),
+              color: backgroundColor),
+          //color: backgroundColor,
+          width: imageButtonSize,
+          height: imageButtonSize,
           child: iconWidget,
         ),
       ));
 }
 
-Widget colorPickerWidget(Function(Color) onTap) {
-  List<Color> colorList = [
-    Colors.black,
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.purple
+Widget colorPickerWidget(Function(String) onTap) {
+  List<String> colorList = [
+    '#FFFFFF',
+    '#000000',
+    '#E53935',
+    '#D81B60',
+    '#8E24AA',
+    '#5E35B1',
+    '#3949AB',
+    '#1E88E5',
+    '#039BE5',
+    '#00ACC1',
+    '#00897B',
+    '#43A047',
+    '#43A047',
+    '#7CB342',
+    '#C0CA33',
+    '#FDD835',
+    '#FFB300',
+    '#FB8C00',
+    '#F4511E',
+    '#6D4C41',
+    '#757575',
+    '#546E7A',
   ];
+
+  var row = 2;
   return SizedBox(
-    height: 38,
+    height: imageButtonSize * row + row * 2,
     width: double.infinity,
-    child: ListView.builder(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.only(left: 0, right: 0),
-      itemCount: colorList.length,
-      itemBuilder: (context, index) {
-        var color = colorList[index];
-        return imageButton(
-            backgroundColor: color,
-            onPressed: () {
-              onTap(color);
-            });
-      },
-    ),
+    child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(left: 0, right: 0),
+        itemCount: colorList.length,
+        itemBuilder: (context, index) {
+          var color = colorList[index];
+          return imageButton(
+              backgroundColor: fromHex(color),
+              onPressed: () {
+                onTap(color);
+              });
+        }),
   );
 }
 

@@ -2,7 +2,7 @@ import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 
 import '../res/color.dart';
-import 'board/board.dart';
+import 'board/board_page.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});

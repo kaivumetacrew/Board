@@ -1,3 +1,4 @@
+import 'package:board/util/color.dart';
 import 'package:flutter/material.dart';
 
 import 'board_draw.dart';
@@ -13,8 +14,8 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   List<BoardItem> items;
   BoardItem selectedItem = BoardItem.none;
   Function(BoardItem) onItemTap = (item) {};
-  Color currentDrawColor = Colors.black;
-  Color currentTextColor = Colors.black;
+  String currentDrawColor = '#000000';
+  String currentTextColor = '#000000';
   String? boardImage;
   String? boardColor;
   DrawController drawController = DrawController();
@@ -61,16 +62,16 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
     }
   }
 
-  void setColor(Color color) {
+  void setColor(String color) {
     if (isDrawing) {
       currentDrawColor = color;
-      drawController.penColor = color;
+      drawController.penColor = fromHex(color);
       drawController.notifyListeners();
       return;
     }
     if (selectedItem.isTextItem) {
       currentTextColor = color;
-      selectedItem.textColor = color;
+      selectedItem.textHexColor = color;
       notifyListeners();
     }
   }
@@ -108,11 +109,18 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   void addNewItem(Function(BoardItem) block) {
     BoardItem item = BoardItem(
       id: value.length,
-      textColor: currentTextColor,
-      strokeColor: currentDrawColor,
     );
     item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
     block(item);
+    if(item.isDrawItem){
+      item.strokeHexColor =  currentDrawColor;
+    }else{
+      stopDraw();
+    }
+    if(item.isTextItem) {
+      item.textHexColor = currentTextColor;
+    }
+
     if (!item.isDrawItem) {
       stopDraw();
     }

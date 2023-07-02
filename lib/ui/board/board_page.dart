@@ -22,7 +22,7 @@ class BoardPage extends StatefulWidget {
   State<BoardPage> createState() => _BoardPageState();
 }
 
-class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
+class _BoardPageState extends State<BoardPage> with TickerProviderStateMixin{
 
   BoardController boardController = BoardController(items: []);
 

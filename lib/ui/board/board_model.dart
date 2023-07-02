@@ -3,13 +3,17 @@ import 'dart:io';
 import 'package:board/ui/board/board_draw.dart';
 import 'package:flutter/material.dart';
 
+import '../../util/color.dart';
+
 class BoardItem {
   int id;
 
   // Text
+
   String? text;
   String? font;
-  Color textColor;
+  String? textHexColor;
+  Color get textColor => textHexColor == null ? Colors.black : fromHex(textHexColor!);
 
   // Image
   File? file;
@@ -19,7 +23,9 @@ class BoardItem {
 
   // Draw
   List<Point> points = [];
-  Color strokeColor;
+  String? strokeHexColor;
+  Color get strokeColor => strokeHexColor == null ? Colors.black : fromHex(strokeHexColor!);
+
   double strokeWidth = 3;
   StrokeCap strokeCap = StrokeCap.round;
   StrokeJoin strokeJoin = StrokeJoin.round;
@@ -39,8 +45,6 @@ class BoardItem {
 
   BoardItem({
     required this.id,
-    this.textColor = Colors.black,
-    this.strokeColor = Colors.black,
   });
 
   bool equal(BoardItem? item) {
