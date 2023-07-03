@@ -25,101 +25,59 @@ class BoardPage extends StatefulWidget {
 class _BoardPageState extends State<BoardPage>
     with TickerProviderStateMixin
 {
-  late Size _screenSize;
-  double boardFoldedDipWidth = 0;
-  double boardBottom = 0;
-  double boardRight = 0;
-  double boardScale = 1;
+  double _boardFoldedDipWidth = 0;
+  double _boardBottom = 0;
+  double _boardRight = 0;
+  double _boardScale = 1;
+  bool _isPortrait = true;
 
-  bool isPortrait = true;
-  Axis _separatorAxis = Axis.vertical;
-  Axis _actionBarAxis = Axis.horizontal;
   final GlobalKey _widgetKey = GlobalKey();
-  BoardController boardController = BoardController(
+  final BoardController _boardController = BoardController(
     items: [],
     boardColor: '#E3E9F2',
   );
-  ActionBarController actionBarController =
+  final ActionBarController _actionBarController =
       ActionBarController(ActionItem.none);
 
   @override
   void initState() {
     super.initState();
     lockPortrait();
-    actionBarController.value = ActionItem.none;
-    boardController.onItemTap = (item) {
-      if (item.isTextItem) {
-        actionBarController.value = (ActionItem.textItem);
-        return;
+    _boardController.onItemTap = (item) {
+      if (item.isNone) {
+        _boardController.deselectItem();
+      } else {
+        _actionBarController.value = ActionItem.mapFormBoardItem(item);
       }
-      if (item.isImageItem) {
-        actionBarController.value = (ActionItem.imageItem);
-        return;
-      }
-      if (item.isStickerItem) {
-        actionBarController.value = (ActionItem.stickerItem);
-        return;
-      }
-      if (item.isDrawItem) {
-        actionBarController.value = (ActionItem.drawItem);
-        return;
-      }
-      boardController.deselectItem();
-      actionBarController.value = ActionItem.none;
     };
   }
 
   @override
   void dispose() {
     super.dispose();
-    actionBarController.dispose();
-    boardController.dispose();
+    _actionBarController.dispose();
+    _boardController.dispose();
   }
-
-  void updateScreenArgs() {
-    _screenSize = MediaQuery.of(context).size;
-    var phoneRatio = 10 / 16;
-    var deviceRatio = _screenSize.width / _screenSize.height;
-    isPortrait = phoneRatio > deviceRatio;
-    if (isPortrait) {
-      _separatorAxis = Axis.vertical;
-      _actionBarAxis = Axis.horizontal;
-      double boardWidthDip = pixelToDip(BoardView.widthPx);
-      double boardHeightDip = pixelToDip(BoardView.heightPx);
-      boardScale = _screenSize.width / boardWidthDip;
-      boardBottom = ((boardHeightDip * boardScale) - boardHeightDip);
-    } else {
-      _separatorAxis = Axis.horizontal;
-      _actionBarAxis = Axis.vertical;
-    }
-  }
-
-  void updateBoardFoldedScreenArgs(Size correctBoardSize) {
-    double boardWidthDip = pixelToDip(BoardView.widthPx);
-    boardFoldedDipWidth = correctBoardSize.height * BoardView.ratio;
-    boardScale = boardFoldedDipWidth / boardWidthDip;
-    boardRight = ((boardWidthDip * boardScale) - boardWidthDip);
-  }
-
+  
   @override
   void didUpdateWidget(covariant BoardPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    updateScreenArgs();
+    _updateScreenArgs();
   }
 
   @override
   Widget build(BuildContext context) {
-    updateScreenArgs();
+    _updateScreenArgs();
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text("Board foldable")),
       body: SafeArea(
         child: ColumnIfPortraitElseRow(
-          isPortrait: isPortrait,
+          isPortrait: _isPortrait,
           children: [
-            boardView(),
-            boardScaleExpand(),
-            separator(axis: _separatorAxis),
+            _boardView(),
+            _boardScaleExpand(),
+            _separator(),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(1),
@@ -131,7 +89,7 @@ class _BoardPageState extends State<BoardPage>
                 ),
               ),
             ),
-            separator(axis: _separatorAxis),
+            _separator(),
             _actionBar()
           ],
         ),
@@ -139,36 +97,57 @@ class _BoardPageState extends State<BoardPage>
     );
   }
 
-  Widget boardScaleExpand() {
-    if (isPortrait) {
-      return SizedBox(width: 5, height: boardBottom);
+
+  void _updateScreenArgs() {
+    Size screenSize = MediaQuery.of(context).size;
+    var phoneRatio = 10 / 16;
+    var deviceRatio = screenSize.width / screenSize.height;
+    _isPortrait = phoneRatio > deviceRatio;
+    if (_isPortrait) {
+      double boardWidthDip = pixelToDip(BoardView.widthPx);
+      double boardHeightDip = pixelToDip(BoardView.heightPx);
+      _boardScale = screenSize.width / boardWidthDip;
+      _boardBottom = ((boardHeightDip * _boardScale) - boardHeightDip);
     }
-    return SizedBox(width: boardRight, height: 5);
   }
 
-  Widget boardView() {
-    if (isPortrait) {
+  void _updateFoldScreenArgs(Size correctBoardSize) {
+    double boardWidthDip = pixelToDip(BoardView.widthPx);
+    _boardFoldedDipWidth = correctBoardSize.height * BoardView.ratio;
+    _boardScale = _boardFoldedDipWidth / boardWidthDip;
+    _boardRight = ((boardWidthDip * _boardScale) - boardWidthDip);
+  }
+
+  Widget _boardScaleExpand() {
+    if (_isPortrait) {
+      return SizedBox(width: 5, height: _boardBottom);
+    }
+    return SizedBox(width: _boardRight, height: 5);
+  }
+
+  Widget _boardView() {
+    if (_isPortrait) {
       // ui for portrait layout
-      boardFoldedDipWidth = 0;
+      _boardFoldedDipWidth = 0;
       return Transform.scale(
-        scale: boardScale,
+        scale: _boardScale,
         alignment: Alignment.topLeft,
-        child: BoardView(boardController: boardController),
+        child: BoardView(boardController: _boardController),
       );
     }
     // ui for fold layout
-    if (boardFoldedDipWidth > 0) {
+    if (_boardFoldedDipWidth > 0) {
       return Transform.scale(
-        scale: boardScale,
+        scale: _boardScale,
         alignment: Alignment.topLeft,
-        child: BoardView(boardController: boardController),
+        child: BoardView(boardController: _boardController),
       );
     }
     return WidgetSizeOffsetWrapper(
       onSizeChange: (Size size) {
-        if (boardFoldedDipWidth == 0) {
+        if (_boardFoldedDipWidth == 0) {
           setState(() {
-            updateBoardFoldedScreenArgs(size);
+            _updateFoldScreenArgs(size);
           });
         }
       },
@@ -176,11 +155,15 @@ class _BoardPageState extends State<BoardPage>
     );
   }
 
+  Widget _separator() {
+    return separator(axis: _isPortrait ? Axis.vertical : Axis.horizontal);
+  }
+
   Widget _removeButton() {
     return imageButton(
         icon: Icons.delete,
         onPressed: () {
-          boardController.removeSelectedItem();
+          _boardController.removeSelectedItem();
         });
   }
 
@@ -188,7 +171,7 @@ class _BoardPageState extends State<BoardPage>
     return imageButton(
         icon: Icons.arrow_upward,
         onPressed: () {
-          boardController.bringToFront();
+          _boardController.bringToFront();
         });
   }
 
@@ -196,21 +179,21 @@ class _BoardPageState extends State<BoardPage>
     return imageButton(
         icon: Icons.arrow_downward,
         onPressed: () {
-          boardController.putToBackButton();
+          _boardController.putToBackButton();
         });
   }
 
   Widget _colorPickerWidget() {
     return colorPickerWidget(
-        isPortrait: isPortrait,
+        isPortrait: _isPortrait,
         onTap: (color) {
-          boardController.setColor(color);
+          _boardController.setColor(color);
         });
   }
 
   Widget _dynamicToolWidget() {
     return ValueListenableBuilder(
-      valueListenable: actionBarController,
+      valueListenable: _actionBarController,
       builder: (
         BuildContext context,
         ActionItem value,
@@ -232,7 +215,7 @@ class _BoardPageState extends State<BoardPage>
 
   Widget _backgroundButton() {
     return RowIfPortraitElseCol(
-      isPortrait: isPortrait,
+      isPortrait: _isPortrait,
       children: [
         const Expanded(child: SizedBox()),
         imageButton(
@@ -250,12 +233,12 @@ class _BoardPageState extends State<BoardPage>
     if (result == null) return;
     String? image = result['image'];
     if (!image.isNullOrEmpty) {
-      boardController.setBackgroundImage(image!);
+      _boardController.setBackgroundImage(image!);
       return;
     }
     String? color = result['color'];
     if (!color.isNullOrEmpty) {
-      boardController.setBackgroundColor(color!);
+      _boardController.setBackgroundColor(color!);
       return;
     }
   }
@@ -263,16 +246,16 @@ class _BoardPageState extends State<BoardPage>
   /// Text
   Widget _textToolWidget() {
     return ColumnIfPortraitElseRow(
-      isPortrait: isPortrait,
+      isPortrait: _isPortrait,
       children: [
         RowIfPortraitElseCol(
-          isPortrait: isPortrait,
+          isPortrait: _isPortrait,
           children: [
             _removeButton(),
             imageButton(
                 icon: Icons.edit,
                 onPressed: () {
-                  _pickText(boardController.selectedItem);
+                  _pickText(_boardController.selectedItem);
                 }),
             _bringToFrontButton(),
             _putToBackButton(),
@@ -291,15 +274,15 @@ class _BoardPageState extends State<BoardPage>
     String? font = result['font'];
     if (text.isNullOrEmpty || font.isNullOrEmpty) return;
     if (selectedItem == BoardItem.none) {
-      boardController.addNewItem((item) {
+      _boardController.addNewItem((item) {
         item.text = text;
         item.font = font;
       });
     } else {
       selectedItem.text = text;
-      boardController.notifyListeners();
+      _boardController.notifyListeners();
     }
-    actionBarController.value = ActionItem.textItem;
+    _actionBarController.value = ActionItem.textItem;
   }
 
   /// Image
@@ -314,10 +297,10 @@ class _BoardPageState extends State<BoardPage>
       );
       var file = File(pickedFile!.path!);
 
-      boardController.addNewItem((item) {
+      _boardController.addNewItem((item) {
         item.file = file;
       });
-      actionBarController.value = ActionItem.imageItem;
+      _actionBarController.value = ActionItem.imageItem;
     } catch (e) {
       setState(() {});
     }
@@ -328,18 +311,18 @@ class _BoardPageState extends State<BoardPage>
         await push(StickerPage(), fullscreenDialog: true);
     String? sticker = result?['sticker'];
     if (sticker.isNullOrEmpty) return;
-    boardController.addNewItem((item) {
+    _boardController.addNewItem((item) {
       item.sticker = sticker;
     });
-    actionBarController.value = ActionItem.stickerItem;
+    _actionBarController.value = ActionItem.stickerItem;
   }
 
   Widget _imageToolWidget() {
     return ColumnIfPortraitElseRow(
-      isPortrait: this.isPortrait,
+      isPortrait: this._isPortrait,
       children: [
         RowIfPortraitElseCol(
-          isPortrait: this.isPortrait,
+          isPortrait: this._isPortrait,
           children: [
             _removeButton(),
             _bringToFrontButton(),
@@ -353,15 +336,15 @@ class _BoardPageState extends State<BoardPage>
   /// Draw
   Widget _drawToolWidget() {
     return ColumnIfPortraitElseRow(
-      isPortrait: isPortrait,
+      isPortrait: _isPortrait,
       children: [
         RowIfPortraitElseCol(
-          isPortrait: isPortrait,
+          isPortrait: _isPortrait,
           children: [
             imageButton(
                 icon: Icons.undo,
                 onPressed: () {
-                  boardController.undoDraw();
+                  _boardController.undoDraw();
                 }),
           ],
         ),
@@ -373,9 +356,9 @@ class _BoardPageState extends State<BoardPage>
   /// Bottom action bar
   Widget _actionBar() {
     return ActionBar(
-      controller: actionBarController,
-      axis: _actionBarAxis,
-      textVisible: _actionBarAxis == Axis.horizontal,
+      controller: _actionBarController,
+      axis:  _isPortrait ? Axis.horizontal : Axis.vertical,
+      textVisible: _isPortrait,
       onItemTap: (item, isSelected) {
         if (item == ActionItem.textItem) {
           _pickText(BoardItem.none);
@@ -391,14 +374,15 @@ class _BoardPageState extends State<BoardPage>
         }
         if (item == ActionItem.drawItem) {
           if (isSelected) {
-            boardController.deselectItem();
-            boardController.startDraw();
+            _boardController.deselectItem();
+            _boardController.startDraw();
           } else {
-            boardController.stopDraw();
+            _boardController.stopDraw();
           }
           return;
         }
       },
     );
   }
+
 }

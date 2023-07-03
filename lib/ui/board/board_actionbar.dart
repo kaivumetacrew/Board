@@ -1,3 +1,4 @@
+import 'package:board/ui/board/board_model.dart';
 import 'package:flutter/material.dart';
 
 class ActionBarController extends ValueNotifier<ActionItem> {
@@ -49,11 +50,9 @@ class _ActionBarState extends State<ActionBar> {
     double size = 70;
     return ValueListenableBuilder(
       valueListenable: widget.controller,
-      builder: (
-        BuildContext context,
-        ActionItem value,
-        Widget? child,
-      ) {
+      builder: (BuildContext context,
+          ActionItem value,
+          Widget? child,) {
         return Container(
           color: Colors.white,
           width: widget.axis == Axis.horizontal ? double.infinity : size,
@@ -73,7 +72,7 @@ class _ActionBarState extends State<ActionBar> {
 
   Widget _actionButton(ActionItem item) {
     Color iconColor =
-        (item.selectable && selectedAction == item) ? Colors.blue : Colors.grey;
+    (item.selectable && selectedAction == item) ? Colors.blue : Colors.grey;
     List<Widget> components = [];
     if (widget.iconVisible) {
       components.add(IconButton(
@@ -142,4 +141,21 @@ class ActionItem {
 
   static ActionItem drawItem =
       ActionItem(3, Icons.draw, 'draw', selectable: true);
+
+  static ActionItem mapFormBoardItem(BoardItem item) {
+    if (item.isTextItem) {
+      return ActionItem.textItem;
+    }
+    if (item.isImageItem) {
+      return (ActionItem.imageItem);
+    }
+    if (item.isStickerItem) {
+      return (ActionItem.stickerItem);
+    }
+    if (item.isDrawItem) {
+      return (ActionItem.drawItem);
+    }
+    return ActionItem.none;
+  }
+
 }

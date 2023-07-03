@@ -62,6 +62,8 @@ class BoardItem {
 
   static BoardItem none = BoardItem(id: -1);
 
+  bool get isNone => id == -1;
+
   bool get isTextItem => text != null && text!.isNotEmpty;
 
   bool get isImageItem => file != null;
