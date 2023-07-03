@@ -94,7 +94,7 @@ class _BoardViewState extends State<BoardView> {
       builder: (BuildContext context,
           bool value,
           Widget? child,) {
-        return boardBackground();
+        return Positioned(child: boardBackground());
       },
     );
   }
@@ -132,7 +132,7 @@ class _BoardViewState extends State<BoardView> {
           builder: (BuildContext context,
               List<BoardItem> value,
               Widget? child,) {
-            return Stack(children: boardItemWidgets);
+            return Positioned(child: Stack(children: boardItemWidgets));
           },
         ),
       ),

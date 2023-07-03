@@ -26,7 +26,7 @@ class _BoardFoldPageState extends State<BoardFoldPage>
     with TickerProviderStateMixin
 {
   late Size _screenSize;
-  double boardDipWidth = 0;
+  double boardFoldedDipWidth = 0;
   double boardBottom = 0;
   double boardRight = 0;
   double boardScale = 1;
@@ -87,11 +87,24 @@ class _BoardFoldPageState extends State<BoardFoldPage>
       double boardWidthDip = pixelToDip(BoardView.widthPx);
       double boardHeightDip = pixelToDip(BoardView.heightPx);
       boardScale = _screenSize.width / boardWidthDip;
-      boardBottom = ((boardHeightDip * boardScale) - boardHeightDip) / 2;
+      boardBottom = ((boardHeightDip * boardScale) - boardHeightDip);
     } else {
       _separatorAxis = Axis.horizontal;
       _actionBarAxis = Axis.vertical;
     }
+  }
+
+  void updateBoardFoldedScreenArgs(Size correctBoardSize) {
+    double boardWidthDip = pixelToDip(BoardView.widthPx);
+    boardFoldedDipWidth = correctBoardSize.height * BoardView.ratio;
+    boardScale = boardFoldedDipWidth / boardWidthDip;
+    boardRight = ((boardWidthDip * boardScale) - boardWidthDip);
+  }
+
+  @override
+  void didUpdateWidget(covariant BoardFoldPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    updateScreenArgs();
   }
 
   @override
@@ -128,40 +141,32 @@ class _BoardFoldPageState extends State<BoardFoldPage>
 
   Widget boardScaleExpand() {
     if (isPortrait) {
-      return Container(
-        width: 50,
-        height: boardBottom,
-        //color: Colors.yellow,
-      );
+      return SizedBox(width: 5, height: boardBottom);
     }
-    return Container(
-      width: boardRight,
-      height: 50,
-      //color: Colors.yellow,
-    );
+    return SizedBox(width: boardRight, height: 5);
   }
 
   Widget boardView() {
     if (isPortrait) {
+      boardFoldedDipWidth = 0;
       return Transform.scale(
         scale: boardScale,
+        alignment: Alignment.topLeft,
         child: BoardView(boardController: boardController),
       );
     }
-    if (boardDipWidth > 0) {
+    if (boardFoldedDipWidth > 0) {
       return Transform.scale(
         scale: boardScale,
+        alignment: Alignment.topLeft,
         child: BoardView(boardController: boardController),
       );
     }
     return WidgetSizeOffsetWrapper(
       onSizeChange: (Size size) {
-        if (boardDipWidth == 0) {
+        if (boardFoldedDipWidth == 0) {
           setState(() {
-            double boardWidthDip = pixelToDip(BoardView.widthPx);
-            boardDipWidth = size.height * BoardView.ratio;
-            boardScale = boardDipWidth / boardWidthDip;
-            boardRight = ((boardWidthDip * boardScale) - boardWidthDip) / 2;
+            updateBoardFoldedScreenArgs(size);
           });
         }
       },

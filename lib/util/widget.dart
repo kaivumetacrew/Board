@@ -140,14 +140,23 @@ class ColumnIfPortraitElseRow extends StatelessWidget {
   List<Widget> children;
   bool isPortrait;
 
-  ColumnIfPortraitElseRow(
-      {super.key, required this.isPortrait, required this.children});
+  ColumnIfPortraitElseRow({
+    super.key,
+    required this.isPortrait,
+    required this.children,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (isPortrait) {
-      return Column(children: children);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      );
     }
-    return Row(children: children);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    );
   }
 }
