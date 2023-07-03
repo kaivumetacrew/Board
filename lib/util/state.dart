@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 extension StateExtension on State {
   Future<R?> push<R extends Object?>(Widget page,
@@ -11,6 +12,22 @@ extension StateExtension on State {
         fullscreenDialog: fullscreenDialog,
       ),
     );
+  }
+
+  void showToast(String? s) {
+    Fluttertoast.showToast(
+        msg: s ?? 'null',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
+
+  void showSnackBar(String? s) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(s ?? '')));
   }
 
   Size get screenSize => MediaQuery.of(context).size;

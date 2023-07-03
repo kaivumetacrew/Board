@@ -26,13 +26,10 @@ class BoardView extends StatefulWidget {
 }
 
 class _BoardViewState extends State<BoardView> {
-  double widthDip = 0;
-  double heightDip = 0;
-
+  double _widthDip = 0;
+  double _heightDip = 0;
   BoardController get _controller => widget.boardController;
-
   DrawController get _drawController => _controller.drawController;
-
   BoardItem get _selectedItem => _controller.selectedItem;
 
   @override
@@ -44,7 +41,7 @@ class _BoardViewState extends State<BoardView> {
   @override
   void didUpdateWidget(covariant BoardView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    updateWidgetSize();
+    _updateWidgetSize();
   }
 
   @override
@@ -54,27 +51,27 @@ class _BoardViewState extends State<BoardView> {
 
   @override
   Widget build(BuildContext context) {
-    updateWidgetSize();
+    _updateWidgetSize();
     return Stack(
       children: [
-        boardBackgroundListener(),
-        boardItemContainer(),
-        boardPaintingContainer(),
+        _boardBackgroundListener(),
+        _boardItemContainer(),
+        _boardPaintingContainer(),
       ],
     );
   }
 
-  void updateWidgetSize() {
+  void _updateWidgetSize() {
     FlutterView flutterView = View.of(context);
-    widthDip = BoardView.widthPx / flutterView.devicePixelRatio;
-    heightDip = BoardView.heightPx / flutterView.devicePixelRatio;
+    _widthDip = BoardView.widthPx / flutterView.devicePixelRatio;
+    _heightDip = BoardView.heightPx / flutterView.devicePixelRatio;
   }
 
   /// Board item widgets
   List<Widget> get boardItemWidgets =>
-      _controller.items.map(itemToWidget).toList();
+      _controller.items.map(_itemToWidget).toList();
 
-  Widget itemToWidget(BoardItem e) {
+  Widget _itemToWidget(BoardItem e) {
     return BoardItemView(
       item: e,
       isSelected: e.equal(_selectedItem),
@@ -88,18 +85,18 @@ class _BoardViewState extends State<BoardView> {
   }
 
   /// Board background
-  Widget boardBackgroundListener() {
+  Widget _boardBackgroundListener() {
     return ValueListenableBuilder(
       valueListenable: _controller.isChangeBackgroundNotifier,
       builder: (BuildContext context,
           bool value,
           Widget? child,) {
-        return Positioned(child: boardBackground());
+        return Positioned(child: _boardBackground());
       },
     );
   }
 
-  Widget boardBackground() {
+  Widget _boardBackground() {
     Widget background() {
       var image = _controller.boardImage;
       if (image != null) {
@@ -112,21 +109,21 @@ class _BoardViewState extends State<BoardView> {
       return Container(color: Colors.white);
     }
     return SizedBox(
-      width: widthDip,
-      height: heightDip,
+      width: _widthDip,
+      height: _heightDip,
       child: background(),
     );
   }
 
   /// Container for board widgets
-  Widget boardItemContainer() {
+  Widget _boardItemContainer() {
     return SizedBox(
-      width: widthDip,
-      height: heightDip,
+      width: _widthDip,
+      height: _heightDip,
       child: MatrixGestureDetector(
         onScaleStart: () {},
         onScaleEnd: () {},
-        onMatrixUpdate: onMatrixUpdate,
+        onMatrixUpdate: _onMatrixUpdate,
         child: ValueListenableBuilder(
           valueListenable: widget.boardController,
           builder: (BuildContext context,
@@ -140,7 +137,7 @@ class _BoardViewState extends State<BoardView> {
   }
 
   /// Container for user draw by finger
-  Widget boardPaintingContainer() {
+  Widget _boardPaintingContainer() {
     return ValueListenableBuilder(
       valueListenable: _controller.isDrawingNotifier,
       builder: (BuildContext context,
@@ -151,8 +148,8 @@ class _BoardViewState extends State<BoardView> {
             top: 0,
             left: 0,
             child: DrawWidget(
-              width: widthDip,
-              height: heightDip,
+              width: _widthDip,
+              height: _heightDip,
               controller: _drawController,
             ),
           );
@@ -163,7 +160,7 @@ class _BoardViewState extends State<BoardView> {
   }
 
   /// Callback on gesture
-  void onMatrixUpdate(MatrixGestureDetectorState state,
+  void _onMatrixUpdate(MatrixGestureDetectorState state,
       Matrix4 matrix,
       Matrix4 translationDeltaMatrix,
       Matrix4 scaleDeltaMatrix,

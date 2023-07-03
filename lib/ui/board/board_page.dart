@@ -70,7 +70,17 @@ class _BoardPageState extends State<BoardPage>
     _updateScreenArgs();
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: const Text("Board foldable")),
+      appBar: AppBar(
+        title: const Text("Board foldable"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+              showSnackBar('Saved');
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ColumnIfPortraitElseRow(
           isPortrait: _isPortrait,
