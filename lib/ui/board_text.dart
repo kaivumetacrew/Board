@@ -156,7 +156,9 @@ class _TextPageState extends State<TextPage> {
                           fontFamily: fontList[index],
                           fontSize: 20,
                         ),
-                        maxLines: 2,
+                        minFontSize: 8,
+                        maxFontSize: 20,
+                        maxLines: 10,
                       ))
                 ],
               ),

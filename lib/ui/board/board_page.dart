@@ -16,7 +16,12 @@ import 'board_view.dart';
 import 'board_widget.dart';
 
 class BoardPage extends StatefulWidget {
-  BoardPage({super.key});
+  BoardData data;
+
+  BoardPage({
+    super.key,
+    required this.data,
+  });
 
   @override
   State<BoardPage> createState() => _BoardPageState();
@@ -26,23 +31,24 @@ class _BoardPageState extends State<BoardPage>
     with TickerProviderStateMixin
 {
   double _boardFoldedDipWidth = 0;
-  double _boardBottom = 0;
-  double _boardRight = 0;
+  double _boardBottom = 1;
+  double _boardRight = 1;
   double _boardScale = 1;
   bool _isPortrait = true;
 
   final GlobalKey _widgetKey = GlobalKey();
-  final BoardController _boardController = BoardController(
-    items: [],
-    boardColor: '#E3E9F2',
-  );
+
+  final BoardController _boardController = BoardController(items: []);
   final ActionBarController _actionBarController =
       ActionBarController(ActionItem.none);
+
+  _BoardPageState();
 
   @override
   void initState() {
     super.initState();
     lockPortrait();
+    _boardController.boardColor = widget.data.color;
     _boardController.onItemTap = (item) {
       if (item.isNone) {
         _boardController.deselectItem();
@@ -71,53 +77,88 @@ class _BoardPageState extends State<BoardPage>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text("Board foldable"),
+        title: Text(widget.data.name),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () {
-              showSnackBar('Saved');
+              showSnackBar('on development');
             },
           ),
         ],
       ),
-      body: SafeArea(
-        child: ColumnIfPortraitElseRow(
-          isPortrait: _isPortrait,
-          children: [
-            _boardView(),
-            _boardScaleExpand(),
-            _separator(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(1),
-                child: Stack(
-                  children: [
-                    _backgroundButton(),
-                    _dynamicToolWidget(),
-                  ],
-                ),
-              ),
-            ),
-            _separator(),
-            _actionBar()
-          ],
-        ),
-      ),
+      body: SafeArea(child: _content()),
     );
   }
 
+  Widget _content() {
+    if (_isPortrait) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _boardView(),
+          _boardScaleExpand(),
+          separator(axis: Axis.vertical),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(1),
+              child: Stack(
+                children: [
+                  _backgroundButton(),
+                  _dynamicToolWidget(),
+                ],
+              ),
+            ),
+          ),
+          separator(axis: Axis.vertical),
+          _actionBar()
+        ],
+      );
+    }
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _boardView(),
+              _boardScaleExpand(),
+              separator(axis: Axis.horizontal),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(1),
+                  child: Stack(
+                    children: [
+                      _backgroundButton(),
+                      _dynamicToolWidget(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        separator(axis: Axis.vertical),
+        _actionBar()
+      ],
+    );
+  }
 
   void _updateScreenArgs() {
     Size screenSize = MediaQuery.of(context).size;
-    var phoneRatio = 10 / 16;
-    var deviceRatio = screenSize.width / screenSize.height;
-    _isPortrait = phoneRatio > deviceRatio;
+    double screenWidthDip = screenSize.width;
+    double minRatio = 10 / 16;
+    double screenRatio = screenSize.width / screenSize.height;
+    _isPortrait = minRatio > screenRatio;
     if (_isPortrait) {
       double boardWidthDip = pixelToDip(BoardView.widthPx);
-      double boardHeightDip = pixelToDip(BoardView.heightPx);
-      _boardScale = screenSize.width / boardWidthDip;
+      // if (boardWidthDip > screenWidthDip) {
+      //   boardWidthDip = screenWidthDip;
+      // }
+      double boardHeightDip = boardWidthDip / BoardView.ratio;
+      _boardScale = screenWidthDip / boardWidthDip;
       _boardBottom = ((boardHeightDip * _boardScale) - boardHeightDip);
+      debugPrint('_boardBottom: $_boardBottom');
     }
   }
 
@@ -125,14 +166,26 @@ class _BoardPageState extends State<BoardPage>
     double boardWidthDip = pixelToDip(BoardView.widthPx);
     _boardFoldedDipWidth = correctBoardSize.height * BoardView.ratio;
     _boardScale = _boardFoldedDipWidth / boardWidthDip;
-    _boardRight = ((boardWidthDip * _boardScale) - boardWidthDip);
+    if (_boardScale >= 1) {
+      _boardRight = ((boardWidthDip * _boardScale) - boardWidthDip);
+    }
+
+    debugPrint('_boardRight: $_boardRight');
   }
 
   Widget _boardScaleExpand() {
     if (_isPortrait) {
-      return SizedBox(width: 5, height: _boardBottom);
+      return Container(
+        width: double.infinity,
+        height: _boardBottom,
+        //color: Colors.black12,
+      );
     }
-    return SizedBox(width: _boardRight, height: 5);
+    return Container(
+      width: _boardRight,
+      height: double.infinity,
+      //color: Colors.black12,
+    );
   }
 
   Widget _boardView() {
@@ -142,7 +195,10 @@ class _BoardPageState extends State<BoardPage>
       return Transform.scale(
         scale: _boardScale,
         alignment: Alignment.topLeft,
-        child: BoardView(boardController: _boardController),
+        child: BoardView(
+          data: widget.data,
+          controller: _boardController,
+        ),
       );
     }
     // ui for fold layout
@@ -150,7 +206,10 @@ class _BoardPageState extends State<BoardPage>
       return Transform.scale(
         scale: _boardScale,
         alignment: Alignment.topLeft,
-        child: BoardView(boardController: _boardController),
+        child: BoardView(
+          data: widget.data,
+          controller: _boardController,
+        ),
       );
     }
     return WidgetSizeOffsetWrapper(
@@ -163,10 +222,6 @@ class _BoardPageState extends State<BoardPage>
       },
       child: Container(key: _widgetKey),
     );
-  }
-
-  Widget _separator() {
-    return separator(axis: _isPortrait ? Axis.vertical : Axis.horizontal);
   }
 
   Widget _removeButton() {
@@ -329,10 +384,10 @@ class _BoardPageState extends State<BoardPage>
 
   Widget _imageToolWidget() {
     return ColumnIfPortraitElseRow(
-      isPortrait: this._isPortrait,
+      isPortrait: _isPortrait,
       children: [
         RowIfPortraitElseCol(
-          isPortrait: this._isPortrait,
+          isPortrait: _isPortrait,
           children: [
             _removeButton(),
             _bringToFrontButton(),
@@ -367,8 +422,6 @@ class _BoardPageState extends State<BoardPage>
   Widget _actionBar() {
     return ActionBar(
       controller: _actionBarController,
-      axis:  _isPortrait ? Axis.horizontal : Axis.vertical,
-      textVisible: _isPortrait,
       onItemTap: (item, isSelected) {
         if (item == ActionItem.textItem) {
           _pickText(BoardItem.none);
@@ -395,4 +448,5 @@ class _BoardPageState extends State<BoardPage>
     );
   }
 
+  void saveBoard() {}
 }

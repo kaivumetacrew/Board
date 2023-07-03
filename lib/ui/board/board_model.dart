@@ -5,6 +5,21 @@ import 'package:flutter/material.dart';
 
 import '../../util/color.dart';
 
+class BoardData {
+  int id;
+  String name;
+  String? color;
+  String? image;
+  List<BoardItem> item;
+
+  BoardData({
+    required this.id,
+    required this.name,
+    required this.item,
+    this.color,
+  });
+}
+
 class BoardItem {
   int id;
 
@@ -13,7 +28,9 @@ class BoardItem {
   String? text;
   String? font;
   String? textHexColor;
-  Color get textColor => textHexColor == null ? Colors.black : fromHex(textHexColor!);
+
+  Color get textColor =>
+      textHexColor == null ? Colors.black : fromHex(textHexColor!);
 
   // Image
   File? file;

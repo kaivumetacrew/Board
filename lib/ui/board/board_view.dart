@@ -11,14 +11,16 @@ import 'board_model.dart';
 import 'gesture_detector.dart';
 
 class BoardView extends StatefulWidget {
-  BoardController boardController;
-  static const double widthPx = 1080;
-  static const double heightPx = 1440;
+  static const double widthPx = 780; // 900
+  static const double heightPx = 1040; // 1200
   static const double ratio = 3 / 4;
+  BoardData data;
+  BoardController controller;
 
   BoardView({
     Key? key,
-    required this.boardController,
+    required this.controller,
+    required this.data,
   }) : super(key: key);
 
   @override
@@ -28,8 +30,11 @@ class BoardView extends StatefulWidget {
 class _BoardViewState extends State<BoardView> {
   double _widthDip = 0;
   double _heightDip = 0;
-  BoardController get _controller => widget.boardController;
+
+  BoardController get _controller => widget.controller;
+
   DrawController get _drawController => _controller.drawController;
+
   BoardItem get _selectedItem => _controller.selectedItem;
 
   @override
@@ -52,19 +57,27 @@ class _BoardViewState extends State<BoardView> {
   @override
   Widget build(BuildContext context) {
     _updateWidgetSize();
-    return Stack(
-      children: [
-        _boardBackgroundListener(),
-        _boardItemContainer(),
-        _boardPaintingContainer(),
-      ],
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        children: [
+          _boardBackgroundListener(),
+          _boardItemContainer(),
+          _boardPaintingContainer(),
+        ],
+      ),
     );
   }
 
   void _updateWidgetSize() {
     FlutterView flutterView = View.of(context);
     _widthDip = BoardView.widthPx / flutterView.devicePixelRatio;
-    _heightDip = BoardView.heightPx / flutterView.devicePixelRatio;
+    // var maxSize = screenSize;
+    // if (_widthDip > maxSize.width) {
+    //   _widthDip = maxSize.width;
+    // }
+    _heightDip = _widthDip / BoardView.ratio;
+    debugPrint('BoardView dip size - width: $_widthDip - height: $_heightDip');
   }
 
   /// Board item widgets
@@ -125,10 +138,12 @@ class _BoardViewState extends State<BoardView> {
         onScaleEnd: () {},
         onMatrixUpdate: _onMatrixUpdate,
         child: ValueListenableBuilder(
-          valueListenable: widget.boardController,
-          builder: (BuildContext context,
-              List<BoardItem> value,
-              Widget? child,) {
+          valueListenable: widget.controller,
+          builder: (
+            BuildContext context,
+            List<BoardItem> value,
+            Widget? child,
+          ) {
             return Positioned(child: Stack(children: boardItemWidgets));
           },
         ),
@@ -154,7 +169,10 @@ class _BoardViewState extends State<BoardView> {
             ),
           );
         }
-        return const SizedBox();
+        return const SizedBox(
+          width: 0,
+          height: 0,
+        );
       },
     );
   }

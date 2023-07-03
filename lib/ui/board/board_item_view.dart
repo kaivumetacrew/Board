@@ -22,29 +22,29 @@ class BoardItemView extends StatelessWidget {
       return isSelected ? _animatedText : _positionedText;
     }
     if (item.isImageItem || item.isStickerItem) {
-      return isSelected ? animatedImage : positionedImage;
+      return isSelected ? _animatedImage : _positionedImage;
     }
     if (item.isDrawItem) {
-      return drawWidget;
+      return _drawWidget;
     }
     return _errorImage();
   }
 
   /// Space between selected item widget and border
-  EdgeInsets get boardItemMargin => const EdgeInsets.all(4.0);
+  EdgeInsets get _boardItemMargin => const EdgeInsets.all(2.0);
 
   /// Border of selected item
-  Widget get boardItemBorder => Positioned(
+  Widget get _boardItemBorder => Positioned(
         top: 0,
         bottom: 0,
         right: 0,
         left: 0,
         child: Container(
-          decoration:
-              BoxDecoration(border: Border.all(color: Colors.black, width: 1)),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black, width: 0.5)),
           child: Container(
             decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 1)),
+                border: Border.all(color: Colors.white, width: 0.5)),
           ),
         ),
       );
@@ -53,7 +53,7 @@ class BoardItemView extends StatelessWidget {
     return Transform(
       transform: item.matrixNotifier.value,
       child: Container(
-        margin: boardItemMargin,
+        margin: _boardItemMargin,
         child: Container(
           child: itemWidget,
         ),
@@ -70,9 +70,9 @@ class BoardItemView extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              boardItemBorder,
+              _boardItemBorder,
               Container(
-                margin: boardItemMargin,
+                margin: _boardItemMargin,
                 child: Container(child: itemWidget),
               ),
             ],
@@ -88,7 +88,7 @@ class BoardItemView extends StatelessWidget {
       style: TextStyle(
         fontFamily: item.font,
         color: item.textColor,
-        fontSize: 48,
+        fontSize: 24,
       ),
     );
     return GestureDetector(
@@ -142,11 +142,11 @@ class BoardItemView extends StatelessWidget {
     );
   }
 
-  Widget get positionedImage => _positionedItem(_image(item));
+  Widget get _positionedImage => _positionedItem(_image(item));
 
-  Widget get animatedImage => _animatedItem(_image(item));
+  Widget get _animatedImage => _animatedItem(_image(item));
 
-  Widget get drawWidget => Container(
+  Widget get _drawWidget => Container(
         color: const Color.fromARGB(100, 163, 93, 65),
         child: CustomPaint(
           painter: PointPainter(
