@@ -1,6 +1,7 @@
 import 'package:board/ui/board/board_model.dart';
 import 'package:board/ui/menu.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,11 +15,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    Hive.initFlutter();
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
-
       theme: ThemeData(
         // This is the theme of your application.
         //

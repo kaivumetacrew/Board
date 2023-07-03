@@ -1,5 +1,6 @@
 import 'package:board/ui/board/board_model.dart';
 import 'package:board/ui/board/board_page.dart';
+import 'package:board/ui/board_list.dart';
 import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 
@@ -40,14 +41,16 @@ class _MenuPageState extends State<MenuPage> {
               children: <Widget>[
                 menuButton('New board', () {
                   var boardData = BoardData(
-                    id: 1,
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
                     name: 'new board',
                     color: '#E3E9F2',
                     items: [],
                   );
-                  push(BoardPage(data: boardData));
+                  push(BoardPage(board: boardData));
                 }),
-                menuButton('My boards', () {}),
+                menuButton('My boards', () {
+                  push(BoardListPage());
+                }),
               ],
             ),
           ),

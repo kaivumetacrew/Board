@@ -1,15 +1,27 @@
-import 'dart:io';
-
 import 'package:board/ui/board/board_draw.dart';
 import 'package:flutter/material.dart';
 
 import '../../util/color.dart';
+import 'package:hive/hive.dart';
 
+
+@HiveType(typeId: 1)
 class BoardData {
-  int id;
+  @HiveField(0)
+  String id;
+
+  @HiveField(1)
   String name;
+
+  @HiveField(2)
+  String? thumbnail;
+
+  @HiveField(3)
   String? color;
+
+  @HiveField(4)
   String? image;
+
   List<BoardItem> items;
 
   BoardData({
@@ -18,6 +30,7 @@ class BoardData {
     required this.items,
     this.color,
     this.image,
+    this.thumbnail,
   });
 }
 
@@ -30,11 +43,13 @@ class BoardItem {
   String? font;
   String? textColor;
 
-  Color get uiColor =>
-      textColor == null ? Colors.black : fromHex(textColor!);
+  Color get uiColor => textColor == null ? Colors.black : fromHex(textColor!);
 
   // Image
-  File? imageFile;
+  String? storageImagePath;
+  String? savedImagePath;
+
+  String? get imagePath => savedImagePath ?? savedImagePath;
 
   // Sticker
   String? sticker;
@@ -42,7 +57,9 @@ class BoardItem {
   // Draw
   List<Point> drawPoints = [];
   String? drawColor;
-  Color get uiDrawColor => drawColor == null ? Colors.black : fromHex(drawColor!);
+
+  Color get uiDrawColor =>
+      drawColor == null ? Colors.black : fromHex(drawColor!);
 
   double drawWidth = 3;
   StrokeCap strokeCap = StrokeCap.round;
@@ -83,7 +100,7 @@ class BoardItem {
 
   bool get isTextItem => text != null && text!.isNotEmpty;
 
-  bool get isImageItem => imageFile != null;
+  bool get isImageItem => imagePath != null;
 
   bool get isStickerItem => sticker != null;
 

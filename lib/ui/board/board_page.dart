@@ -1,15 +1,17 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:board/util/state.dart';
 import 'package:board/util/string.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:hive/hive.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
 
-import '../../main.dart';
 import '../../util/widget.dart';
 import '../board_background.dart';
 import '../board_stickers.dart';
-import '../board_text.dart';
 import 'board_actionbar.dart';
 import 'board_controller.dart';
 import 'board_model.dart';
@@ -17,20 +19,18 @@ import 'board_view.dart';
 import 'board_widget.dart';
 
 class BoardPage extends StatefulWidget {
-  BoardData data;
+  BoardData board;
 
   BoardPage({
     super.key,
-    required this.data,
+    required this.board,
   });
 
   @override
-  State<BoardPage> createState() => _BoardPageState();
+  State<BoardPage> createState() => BoardPageState();
 }
 
-class _BoardPageState extends State<BoardPage>
-    with TickerProviderStateMixin
-{
+class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   double _boardFoldedDipWidth = 0;
   double _boardBottom = 1;
   double _boardRight = 1;
@@ -38,20 +38,20 @@ class _BoardPageState extends State<BoardPage>
   bool _isPortrait = true;
 
   final GlobalKey _widgetKey = GlobalKey();
-
+  ScreenshotController screenshotController = ScreenshotController();
   final BoardController _boardController = BoardController(items: []);
   final ActionBarController _actionBarController =
       ActionBarController(ActionItem.none);
 
-  _BoardPageState();
+  BoardPageState();
 
   @override
   void initState() {
     super.initState();
     lockPortrait();
     _boardController
-      ..boardName = widget.data.name
-      ..boardColor = widget.data.color
+      ..boardColor = widget.board.color
+      ..boardImage = widget.board.image
       ..onItemTap = (item) {
         if (item.isNone) {
           _boardController.deselectItem();
@@ -80,13 +80,16 @@ class _BoardPageState extends State<BoardPage>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(widget.data.name),
+        title: Text(widget.board.name),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () {
+              _boardController.deselectItem();
               showSnackBar('on development');
-              saveBoard();
+              saveBoard().then((value) {
+                Navigator.pop(context);
+              });
             },
           ),
         ],
@@ -192,29 +195,16 @@ class _BoardPageState extends State<BoardPage>
     );
   }
 
+  /// Transform BoardView to fit screen
   Widget _boardView() {
     if (_isPortrait) {
       // ui for portrait layout
       _boardFoldedDipWidth = 0;
-      return Transform.scale(
-        scale: _boardScale,
-        alignment: Alignment.topLeft,
-        child: BoardView(
-          data: widget.data,
-          controller: _boardController,
-        ),
-      );
+      return _transformBoardView();
     }
     // ui for fold layout
     if (_boardFoldedDipWidth > 0) {
-      return Transform.scale(
-        scale: _boardScale,
-        alignment: Alignment.topLeft,
-        child: BoardView(
-          data: widget.data,
-          controller: _boardController,
-        ),
-      );
+      return _transformBoardView();
     }
     return WidgetSizeOffsetWrapper(
       onSizeChange: (Size size) {
@@ -225,6 +215,20 @@ class _BoardPageState extends State<BoardPage>
         }
       },
       child: Container(key: _widgetKey),
+    );
+  }
+
+  Widget _transformBoardView() {
+    return Transform.scale(
+      scale: _boardScale,
+      alignment: Alignment.topLeft,
+      child: Screenshot(
+        controller: screenshotController,
+        child: BoardView(
+          data: widget.board,
+          controller: _boardController,
+        ),
+      ),
     );
   }
 
@@ -336,43 +340,31 @@ class _BoardPageState extends State<BoardPage>
   }
 
   Future<void> _pickText(BoardItem selectedItem) async {
-    var page = TextPage(text: selectedItem.text);
-    Map<String, dynamic>? result = await push(page, fullscreenDialog: true);
-    if (result == null) return;
-    String? text = result['text'];
-    String? font = result['font'];
-    if (text.isNullOrEmpty || font.isNullOrEmpty) return;
-    if (selectedItem == BoardItem.none) {
-      _boardController.addNewItem((item) {
-        item.text = text;
-        item.font = font;
-      });
-    } else {
-      selectedItem.text = text;
-      _boardController.notifyListeners();
-    }
-    _actionBarController.value = ActionItem.textItem;
+    pickText(
+      currentText: selectedItem.text!,
+      onResult: (text, font) {
+        if (selectedItem == BoardItem.none) {
+          _boardController.addNewItem((item) {
+            item.text = text;
+            item.font = font;
+          });
+        } else {
+          selectedItem.text = text;
+          _boardController.notifyListeners();
+        }
+        _actionBarController.value = ActionItem.textItem;
+      },
+    );
   }
 
   /// Image
   Future<void> _pickGalleryImage() async {
-    final ImagePicker picker = ImagePicker();
-    try {
-      final XFile? pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 6000,
-        maxHeight: 6000,
-        imageQuality: 100,
-      );
-      var file = File(pickedFile!.path!);
-
-      _boardController.addNewItem((item) {
-        item.imageFile = file;
-      });
-      _actionBarController.value = ActionItem.imageItem;
-    } catch (e) {
-      setState(() {});
-    }
+    var file = await pickImage();
+    if (file == null) return;
+    _boardController.addNewItem((item) {
+      item.storageImagePath = file.path;
+    });
+    _actionBarController.value = ActionItem.imageItem;
   }
 
   Future<void> _pickStickerImage() async {
@@ -452,32 +444,47 @@ class _BoardPageState extends State<BoardPage>
     );
   }
 
-  void saveBoard() {
-    var boardName = _boardController.boardName ?? 'new board';
-    var boardColor = _boardController.boardColor;
-    var boardImage = _boardController.boardImage;
-    var items = _boardController.items;
+  Future<void> saveBoard() async {
+    BoardController con = _boardController;
+    BoardData board = widget.board;
+    Directory packageDir = await getApplicationDocumentsDirectory();
+    String boardDir = '${packageDir.path}/boards/${board.id}';
+    String thumbPath = '$boardDir/thumbnail.jpg';
 
-    var data = BoardData(
-      id: myBoards.length,
-      name: widget.data.name,
-      color: _boardController.boardColor,
-      image: _boardController.boardImage,
-      items: _boardController.items,
-    );
-    myBoards.add(data);
+    board
+      ..color = con.boardColor
+      ..image = con.boardImage
+      ..items = con.items
+      ..thumbnail = thumbPath;
+
+    await createThumbnail(board.thumbnail!);
+
+    Map<String, String?> pathMap = {};
+    for (BoardItem item in con.items) {
+      if (item.isImageItem) {
+        String storageImagePath = item.storageImagePath!;
+        String imageName = path.basename(storageImagePath);
+        String? existPath = pathMap[storageImagePath];
+        if (existPath == null) {
+          String saveFilePath = '$boardDir/$imageName';
+          File(storageImagePath).copy(saveFilePath);
+          pathMap[storageImagePath] = saveFilePath;
+          item.savedImagePath = saveFilePath;
+        } else {
+          item.savedImagePath = existPath;
+        }
+      }
+    }
+
+    var box = await Hive.openBox('boards');
+    box.put('name', 'David');
   }
 
-  Map<String, dynamic?> boardItemDbo(BoardItem i) {
-    return {
-      'id': i.id,
-      'text': i.text,
-      'font': i.font,
-      'textColor': i.textColor,
-      'image': i.imageFile?.path,
-      'sticker': i.sticker,
-      'drawColor': i.drawColor,
-      'drawPoints': i.drawPoints,
-    };
+  Future createThumbnail(String path) async {
+    Uint8List? imageBytes = await screenshotController.capture();
+    if (imageBytes == null) return;
+    final String thumbPath = path;
+    File file = File(thumbPath);
+    file.writeAsBytesSync(imageBytes);
   }
 }

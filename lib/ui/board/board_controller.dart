@@ -16,7 +16,6 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   Function(BoardItem) onItemTap = (item) {};
   String currentDrawColor = '#000000';
   String currentTextColor = '#000000';
-  String? boardName;
   String? boardImage;
   String? boardColor;
   DrawController drawController = DrawController();
