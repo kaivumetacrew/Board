@@ -87,7 +87,7 @@ class BoardItemView extends StatelessWidget {
       item.text!,
       style: TextStyle(
         fontFamily: item.font,
-        color: item.textColor,
+        color: item.uiColor,
         fontSize: 24,
       ),
     );
@@ -122,7 +122,7 @@ class BoardItemView extends StatelessWidget {
   Widget _image(BoardItem item) {
     Widget imageWidget;
     if (item.isImageItem) {
-      imageWidget = Image.file(item.file!, errorBuilder:
+      imageWidget = Image.file(item.imageFile!, errorBuilder:
           (BuildContext context, Object error, StackTrace? stackTrace) {
         return _errorImage(message: 'This image error');
       });
@@ -150,9 +150,9 @@ class BoardItemView extends StatelessWidget {
         color: const Color.fromARGB(100, 163, 93, 65),
         child: CustomPaint(
           painter: PointPainter(
-              points: item.points,
-              strokeColor: item.strokeColor,
-              strokeWidth: item.strokeWidth,
+              points: item.drawPoints,
+              strokeColor: item.uiDrawColor,
+              strokeWidth: item.drawWidth,
               strokeCap: item.strokeCap,
               strokeJoin: item.strokeJoin),
         ),

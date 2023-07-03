@@ -5,6 +5,7 @@ import 'package:board/util/string.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../main.dart';
 import '../../util/widget.dart';
 import '../board_background.dart';
 import '../board_stickers.dart';
@@ -48,14 +49,16 @@ class _BoardPageState extends State<BoardPage>
   void initState() {
     super.initState();
     lockPortrait();
-    _boardController.boardColor = widget.data.color;
-    _boardController.onItemTap = (item) {
-      if (item.isNone) {
-        _boardController.deselectItem();
-      } else {
-        _actionBarController.value = ActionItem.mapFormBoardItem(item);
-      }
-    };
+    _boardController
+      ..boardName = widget.data.name
+      ..boardColor = widget.data.color
+      ..onItemTap = (item) {
+        if (item.isNone) {
+          _boardController.deselectItem();
+        } else {
+          _actionBarController.value = ActionItem.mapFormBoardItem(item);
+        }
+      };
   }
 
   @override
@@ -83,6 +86,7 @@ class _BoardPageState extends State<BoardPage>
             icon: const Icon(Icons.save),
             onPressed: () {
               showSnackBar('on development');
+              saveBoard();
             },
           ),
         ],
@@ -363,7 +367,7 @@ class _BoardPageState extends State<BoardPage>
       var file = File(pickedFile!.path!);
 
       _boardController.addNewItem((item) {
-        item.file = file;
+        item.imageFile = file;
       });
       _actionBarController.value = ActionItem.imageItem;
     } catch (e) {
@@ -448,5 +452,32 @@ class _BoardPageState extends State<BoardPage>
     );
   }
 
-  void saveBoard() {}
+  void saveBoard() {
+    var boardName = _boardController.boardName ?? 'new board';
+    var boardColor = _boardController.boardColor;
+    var boardImage = _boardController.boardImage;
+    var items = _boardController.items;
+
+    var data = BoardData(
+      id: myBoards.length,
+      name: widget.data.name,
+      color: _boardController.boardColor,
+      image: _boardController.boardImage,
+      items: _boardController.items,
+    );
+    myBoards.add(data);
+  }
+
+  Map<String, dynamic?> boardItemDbo(BoardItem i) {
+    return {
+      'id': i.id,
+      'text': i.text,
+      'font': i.font,
+      'textColor': i.textColor,
+      'image': i.imageFile?.path,
+      'sticker': i.sticker,
+      'drawColor': i.drawColor,
+      'drawPoints': i.drawPoints,
+    };
+  }
 }

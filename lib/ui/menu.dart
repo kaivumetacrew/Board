@@ -43,7 +43,7 @@ class _MenuPageState extends State<MenuPage> {
                     id: 1,
                     name: 'new board',
                     color: '#E3E9F2',
-                    item: [],
+                    items: [],
                   );
                   push(BoardPage(data: boardData));
                 }),

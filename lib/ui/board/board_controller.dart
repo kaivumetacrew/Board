@@ -16,6 +16,7 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   Function(BoardItem) onItemTap = (item) {};
   String currentDrawColor = '#000000';
   String currentTextColor = '#000000';
+  String? boardName;
   String? boardImage;
   String? boardColor;
   DrawController drawController = DrawController();
@@ -82,7 +83,7 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
     }
     if (selectedItem.isTextItem) {
       currentTextColor = color;
-      selectedItem.textHexColor = color;
+      selectedItem.textColor = color;
       notifyListeners();
     }
   }
@@ -124,12 +125,12 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
     item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
     block(item);
     if(item.isDrawItem){
-      item.strokeHexColor =  currentDrawColor;
+      item.drawColor =  currentDrawColor;
     }else{
       stopDraw();
     }
     if(item.isTextItem) {
-      item.textHexColor = currentTextColor;
+      item.textColor = currentTextColor;
     }
 
     if (!item.isDrawItem) {
@@ -142,7 +143,7 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
 
   void undoDraw() {
     var item =
-        value.reversed.firstWhere((element) => element.points.isNotEmpty);
+        value.reversed.firstWhere((element) => element.drawPoints.isNotEmpty);
     value.removeWhere((element) => element.id == item.id);
     notifyListeners();
   }

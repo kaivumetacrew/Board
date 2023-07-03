@@ -1,12 +1,12 @@
-import 'package:board/res/color.dart';
+import 'package:board/ui/board/board_model.dart';
 import 'package:board/ui/menu.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 void main() {
-
   runApp(const MyApp());
 }
+
+List<BoardData> myBoards = [];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

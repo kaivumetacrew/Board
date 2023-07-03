@@ -10,13 +10,14 @@ class BoardData {
   String name;
   String? color;
   String? image;
-  List<BoardItem> item;
+  List<BoardItem> items;
 
   BoardData({
     required this.id,
     required this.name,
-    required this.item,
+    required this.items,
     this.color,
+    this.image,
   });
 }
 
@@ -27,28 +28,27 @@ class BoardItem {
 
   String? text;
   String? font;
-  String? textHexColor;
+  String? textColor;
 
-  Color get textColor =>
-      textHexColor == null ? Colors.black : fromHex(textHexColor!);
+  Color get uiColor =>
+      textColor == null ? Colors.black : fromHex(textColor!);
 
   // Image
-  File? file;
+  File? imageFile;
 
   // Sticker
   String? sticker;
 
   // Draw
-  List<Point> points = [];
-  String? strokeHexColor;
-  Color get strokeColor => strokeHexColor == null ? Colors.black : fromHex(strokeHexColor!);
+  List<Point> drawPoints = [];
+  String? drawColor;
+  Color get uiDrawColor => drawColor == null ? Colors.black : fromHex(drawColor!);
 
-  double strokeWidth = 3;
+  double drawWidth = 3;
   StrokeCap strokeCap = StrokeCap.round;
   StrokeJoin strokeJoin = StrokeJoin.round;
 
-  //
-  // Position
+  /// Position
   ValueNotifier<Matrix4> matrixNotifier = ValueNotifier(Matrix4.identity());
   bool isLockRotate = true;
   bool isLockScale = true;
@@ -83,9 +83,9 @@ class BoardItem {
 
   bool get isTextItem => text != null && text!.isNotEmpty;
 
-  bool get isImageItem => file != null;
+  bool get isImageItem => imageFile != null;
 
   bool get isStickerItem => sticker != null;
 
-  bool get isDrawItem => points.isNotEmpty;
+  bool get isDrawItem => drawPoints.isNotEmpty;
 }

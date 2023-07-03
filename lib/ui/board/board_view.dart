@@ -201,7 +201,7 @@ class _BoardViewState extends State<BoardView> {
   /// Callback on finger draw tap up
   void _onDrawEnd() {
     _controller.addNewItem((item) {
-      item.points = _drawController.points;
+      item.drawPoints = _drawController.points;
     });
     _drawController.clear();
   }
