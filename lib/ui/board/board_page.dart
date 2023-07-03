@@ -58,7 +58,7 @@ class _BoardPageState extends State<BoardPage>
     _actionBarController.dispose();
     _boardController.dispose();
   }
-  
+
   @override
   void didUpdateWidget(covariant BoardPage oldWidget) {
     super.didUpdateWidget(oldWidget);
