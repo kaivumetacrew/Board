@@ -1,4 +1,4 @@
-import 'package:board/ui/board/board_page_foldable.dart';
+import 'package:board/ui/board/board_page.dart';
 import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 
@@ -21,15 +21,12 @@ class _MenuPageState extends State<MenuPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            /*menuButton('New board', () {
-              push(BoardPage());
-            }),*/
             menuButton('New board', () {
-              push(BoardFoldPage());
+              push(BoardPage());
             }),
-            /*menuButton('My boards', () {
+            menuButton('My boards', () {
 
-            }),*/
+            }),
           ],
         ),
       ),
