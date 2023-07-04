@@ -11,8 +11,8 @@ import 'board_model.dart';
 import 'gesture_detector.dart';
 
 class BoardView extends StatefulWidget {
-  static const double widthPx = 780; // 900
-  static const double heightPx = 1040; // 1200
+  static const double widthPx = 870; // 900 //dip  280
+  static const double heightPx = 1160; // 1200
   static const double ratio = 3 / 4;
   BoardData data;
   BoardController controller;

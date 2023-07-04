@@ -1,10 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:board/ui/board/board_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'board_db.g.dart';
-
-
 
 ///Run build task flutter packages pub run build_runner build
 @HiveType(typeId: 1)
@@ -87,8 +87,10 @@ class BoardItemDBO {
   @HiveField(7)
   String? drawColor;
 
+  @HiveField(8)
+  String? matrix; //Matrix4.fromFloat64List(this._m4storage);
+
   //List<Point>? drawPoints;
-  //Float64List? matrix; //Matrix4.fromFloat64List(this._m4storage);
 
   BoardItemDBO({required this.id});
 
@@ -101,8 +103,14 @@ class BoardItemDBO {
       ..imagePath = item.imagePath
       ..sticker = item.sticker
       ..drawColor = item.drawColor;
-    //..drawPoints = item.drawPoints
-    //..matrix = item.matrix.storage;
+
+    if (item.isImageItem || item.isTextItem || item.isStickerItem) {
+      Float64List matrixStorage = item.matrix.storage;
+      String stringList = matrixStorage.join(';');
+      data.matrix = stringList;
+    }
+
+    //data.drawPoints = item.drawPoints
 
     return data;
   }
@@ -117,10 +125,13 @@ class BoardItemDBO {
       ..sticker = sticker
       ..drawColor = drawColor;
 
+    List<double>? matrixData = matrix?.split(';').map((e) => double.parse(e))?.toList();
+    final mt = matrix != null
+        ? Matrix4.fromFloat64List(Float64List.fromList(matrixData!!))
+        : Matrix4.identity();
+
+    item.matrixNotifier = ValueNotifier(mt);
     // item.drawPoints = drawPoints;
-    // final mt = matrix != null ? Matrix4.fromFloat64List(matrix!) : Matrix4.identity();
-    // item.matrixNotifier = ValueNotifier(mt);
-    item.matrixNotifier = ValueNotifier(Matrix4.identity());
     return item;
   }
 

@@ -39,8 +39,6 @@ class BoardPage extends StatefulWidget {
 
 class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   double _boardFoldedDipWidth = 0;
-  double _boardBottom = 1;
-  double _boardRight = 1;
   double _boardScale = 1;
   bool _isPortrait = true;
 
@@ -107,10 +105,8 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   Widget _content() {
     if (_isPortrait) {
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _boardView(),
-          _boardScaleExpand(),
           separator(axis: Axis.vertical),
           Expanded(
             child: Padding(
@@ -135,7 +131,6 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _boardView(),
-              _boardScaleExpand(),
               separator(axis: Axis.horizontal),
               Expanded(
                 child: Padding(
@@ -165,13 +160,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     _isPortrait = minRatio > screenRatio;
     if (_isPortrait) {
       double boardWidthDip = pixelToDip(BoardView.widthPx);
-      // if (boardWidthDip > screenWidthDip) {
-      //   boardWidthDip = screenWidthDip;
-      // }
-      double boardHeightDip = boardWidthDip / BoardView.ratio;
       _boardScale = screenWidthDip / boardWidthDip;
-      _boardBottom = ((boardHeightDip * _boardScale) - boardHeightDip);
-      debugPrint('_boardBottom: $_boardBottom');
     }
   }
 
@@ -179,27 +168,8 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     double boardWidthDip = pixelToDip(BoardView.widthPx);
     _boardFoldedDipWidth = correctBoardSize.height * BoardView.ratio;
     _boardScale = _boardFoldedDipWidth / boardWidthDip;
-    if (_boardScale >= 1) {
-      _boardRight = ((boardWidthDip * _boardScale) - boardWidthDip);
-    }
-
-    debugPrint('_boardRight: $_boardRight');
   }
 
-  Widget _boardScaleExpand() {
-    if (_isPortrait) {
-      return Container(
-        width: double.infinity,
-        height: _boardBottom,
-        //color: Colors.black12,
-      );
-    }
-    return Container(
-      width: _boardRight,
-      height: double.infinity,
-      //color: Colors.black12,
-    );
-  }
 
   /// Transform BoardView to fit screen
   Widget _boardView() {
@@ -225,14 +195,58 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget _transformBoardView() {
-    return Transform.scale(
-      scale: _boardScale,
-      alignment: Alignment.topLeft,
-      child: Screenshot(
-        controller: screenshotController,
-        child: BoardView(
-          data: widget.board,
-          controller: _boardController,
+    if(_isPortrait){
+      return Container(
+        width: screenSize.width,
+        height: screenSize.width / BoardView.ratio,
+        color: Colors.yellow,
+        child: Center(
+          child: Transform.scale(
+            scale: _boardScale,
+            alignment: Alignment.center,
+            child: Screenshot(
+              controller: screenshotController,
+              child: BoardView(
+                data: widget.board,
+                controller: _boardController,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Container(
+      width: _boardFoldedDipWidth,
+      height: _boardFoldedDipWidth / BoardView.ratio,
+      color: Colors.yellow,
+      child: Center(
+        child: Transform.scale(
+          scale: _boardScale,
+          alignment: Alignment.center,
+          child: Screenshot(
+            controller: screenshotController,
+            child: BoardView(
+              data: widget.board,
+              controller: _boardController,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return AspectRatio(
+      aspectRatio: BoardView.ratio,
+      child: Center(
+        child: Transform.scale(
+          scale: _boardScale,
+          alignment: Alignment.topLeft,
+          child: Screenshot(
+            controller: screenshotController,
+            child: BoardView(
+              data: widget.board,
+              controller: _boardController,
+            ),
+          ),
         ),
       ),
     );
@@ -486,7 +500,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     for (BoardItemDBO element in itemBox.values) {
       debugPrint('box board item instance: ${element.id}');
     }
-    itemBox.close();
+    await itemBox.close();
     return true;
   }
 
@@ -495,7 +509,11 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   /// and save resource path for reload saved boards
   void saveBoardResources(List<BoardItem> items, String dir) {
     Map<String, String?> pathMap = {};
-    items.where((element) => element.isImageItem).forEach((item) {
+    var imageItem = items
+        .where(
+            (element) => element.isImageItem && element.savedImagePath == null)
+        .toList();
+    for (BoardItem item in imageItem) {
       String storageImagePath = item.storageImagePath!;
       String imageName = path.basename(storageImagePath);
       String? existPath = pathMap[storageImagePath];
@@ -507,6 +525,6 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       } else {
         item.savedImagePath = existPath;
       }
-    });
+    }
   }
 }

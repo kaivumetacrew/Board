@@ -91,5 +91,6 @@ class BoardItem {
 
   bool get isDrawItem => drawPoints != null && drawPoints!.isNotEmpty;
 
+
 }
 
