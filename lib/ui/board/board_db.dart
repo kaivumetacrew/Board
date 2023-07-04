@@ -58,6 +58,7 @@ class BoardDataDBO {
     data.image = image;
     return data;
   }
+
 }
 
 @HiveType(typeId: 2)
@@ -122,6 +123,7 @@ class BoardItemDBO {
     item.matrixNotifier = ValueNotifier(Matrix4.identity());
     return item;
   }
+
 }
 
 Future<void> openBoardsBox(Function(Box<BoardDataDBO> box) block) async {
