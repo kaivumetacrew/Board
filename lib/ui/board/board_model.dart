@@ -1,13 +1,13 @@
 import 'package:board/ui/board/board_draw.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
 import '../../util/color.dart';
-import 'package:hive/hive.dart';
 
 part 'board_model.g.dart';
 
-Future<void> editBoardsData(Function(Box<BoardData> box) block) async{
-  final box  = await Hive.openBox<BoardData>('boards');
+Future<void> editBoardsData(Function(Box<BoardData> box) block) async {
+  final box = await Hive.openBox<BoardData>('boards');
   block(box);
   box.close();
 }
@@ -80,7 +80,7 @@ class BoardItem {
   //Matrix4 translationDeltaMatrix = Matrix4.identity();
   //Matrix4 scaleDeltaMatrix = Matrix4.identity();
   //Matrix4 rotationDeltaMatrix = Matrix4.identity();
-  Matrix4 matrix = Matrix4.identity();
+  Matrix4 get matrix => matrixNotifier.value;
 
   BoardItem({
     required this.id,

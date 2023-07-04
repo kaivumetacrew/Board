@@ -194,7 +194,6 @@ class _BoardViewState extends State<BoardView> {
       state.update(_selectedItem.matrix);
       return;
     }
-    _selectedItem.matrix = matrix;
     _selectedItem.matrixNotifier.value = matrix;
   }
 

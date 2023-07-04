@@ -3,10 +3,10 @@ import 'package:board/ui/widget/textfield.dart';
 import 'package:flutter/material.dart';
 
 class TextPage extends StatefulWidget {
-  TextPage({super.key, this.text, this.font = ''});
+  TextPage({super.key, this.text, this.font});
 
   String? text;
-  String font = '';
+  String? font;
 
   @override
   State<TextPage> createState() => _TextPageState();
@@ -33,10 +33,7 @@ class _TextPageState extends State<TextPage> {
   @override
   void initState() {
     super.initState();
-    _selectedFont = widget.font;
-    if (_selectedFont?.isEmpty ?? true) {
-      _selectedFont = fontList.first;
-    }
+    _selectedFont = widget.font ?? fontList.first;
     _textController.text = widget.text ?? '';
     syncText(widget.text ?? '');
   }

@@ -6,8 +6,6 @@ import 'board_model.dart';
 
 class BoardController extends ValueNotifier<List<BoardItem>> {
 
-  BoardController(this.items) : super(items);
-
   List<BoardItem> items;
   BoardItem selectedItem = BoardItem.none;
   Function(BoardItem) onItemTap = (item) {};
@@ -18,11 +16,14 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   DrawController drawController = DrawController();
   ValueNotifier<bool> isDrawingNotifier = ValueNotifier(false);
   ValueNotifier<bool> isChangeBackgroundNotifier = ValueNotifier(false);
+
   bool get isDrawing => isDrawingNotifier.value;
   double portraitWidth = 0;
   double portraitHeight = 0;
   double landscapeWidth = 0;
   double landscapeHeight = 0;
+
+  BoardController(this.items) : super(items);
 
   @override
   void dispose() {

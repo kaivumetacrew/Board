@@ -112,12 +112,16 @@ extension BoardPageExtension on BoardPageState {
   }
 
   Future pickText({
-    required String currentText,
+    required String? currentText,
+    required String? currentFont,
     required Function(String text, String font) onResult,
   }) async {
     Map<String, dynamic>? result = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => TextPage(text: currentText),
+        builder: (context) => TextPage(
+          text: currentText,
+          font: currentFont,
+        ),
         fullscreenDialog: true,
       ),
     );

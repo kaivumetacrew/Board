@@ -21,11 +21,16 @@ import 'board_widget.dart';
 
 class BoardPage extends StatefulWidget {
   BoardData board;
+  late BoardController boardController;
 
   BoardPage({
     super.key,
     required this.board,
-  });
+  }) {
+    boardController = BoardController(board.items)
+      ..boardColor = board.color
+      ..boardImage = board.image;
+  }
 
   @override
   State<BoardPage> createState() => BoardPageState();
@@ -40,7 +45,9 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   final GlobalKey _widgetKey = GlobalKey();
   ScreenshotController screenshotController = ScreenshotController();
-  final BoardController _boardController = BoardController([]);
+
+  BoardController get _boardController => widget.boardController;
+
   final ActionBarController _actionBarController =
       ActionBarController(ActionItem.none);
 
@@ -50,18 +57,13 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     lockPortrait();
-    final board = widget.board;
-    _boardController
-      ..items = board.items
-      ..boardColor = board.color
-      ..boardImage = board.image
-      ..onItemTap = (item) {
-        if (item.isNone) {
-          _boardController.deselectItem();
-        } else {
-          _actionBarController.value = ActionItem.mapFormBoardItem(item);
-        }
-      };
+    _boardController.onItemTap = (item) {
+      if (item.isNone) {
+        _boardController.deselectItem();
+      } else {
+        _actionBarController.value = ActionItem.mapFormBoardItem(item);
+      }
+    };
   }
 
   @override
@@ -344,7 +346,8 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   Future<void> _pickText(BoardItem selectedItem) async {
     pickText(
-      currentText: selectedItem.text!,
+      currentText: selectedItem.text,
+      currentFont: selectedItem.font,
       onResult: (text, font) {
         if (selectedItem == BoardItem.none) {
           _boardController.addNewItem((item) {
@@ -353,6 +356,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
           });
         } else {
           selectedItem.text = text;
+          selectedItem.font = font;
           _boardController.notifyListeners();
         }
         _actionBarController.value = ActionItem.textItem;
