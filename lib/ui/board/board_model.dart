@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import '../../util/color.dart';
 import 'package:hive/hive.dart';
 
+part 'board_model.g.dart';
 
 @HiveType(typeId: 1)
 class BoardData {
   @HiveField(0)
-  String id;
+  int id;
 
   @HiveField(1)
   String name;
@@ -49,7 +50,7 @@ class BoardItem {
   String? storageImagePath;
   String? savedImagePath;
 
-  String? get imagePath => savedImagePath ?? savedImagePath;
+  String? get imagePath => storageImagePath ?? savedImagePath;
 
   // Sticker
   String? sticker;

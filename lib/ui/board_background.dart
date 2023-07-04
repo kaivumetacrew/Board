@@ -15,6 +15,7 @@ class _BackgroundPageState extends State<BackgroundPage> {
     'board1.jpg',
     'board2.jpg',
     'board3.jpg',
+    'sample.png',
   ];
 
   List<String> colorList = [

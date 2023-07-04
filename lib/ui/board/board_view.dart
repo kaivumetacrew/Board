@@ -59,6 +59,8 @@ class _BoardViewState extends State<BoardView> {
     _updateWidgetSize();
     return Container(
       color: Colors.black,
+      width: _widthDip,
+      height: _heightDip,
       child: Stack(
         children: [
           _boardBackgroundListener(),
@@ -72,10 +74,6 @@ class _BoardViewState extends State<BoardView> {
   void _updateWidgetSize() {
     FlutterView flutterView = View.of(context);
     _widthDip = BoardView.widthPx / flutterView.devicePixelRatio;
-    // var maxSize = screenSize;
-    // if (_widthDip > maxSize.width) {
-    //   _widthDip = maxSize.width;
-    // }
     _heightDip = _widthDip / BoardView.ratio;
     debugPrint('BoardView dip size - width: $_widthDip - height: $_heightDip');
   }
@@ -104,7 +102,13 @@ class _BoardViewState extends State<BoardView> {
       builder: (BuildContext context,
           bool value,
           Widget? child,) {
-        return Positioned(child: _boardBackground());
+        return Positioned(
+          top: 0,
+          bottom: 0,
+          right: 0,
+          left: 0,
+          child: _boardBackground(),
+        );
       },
     );
   }
@@ -121,18 +125,14 @@ class _BoardViewState extends State<BoardView> {
       }
       return Container(color: Colors.white);
     }
-    return SizedBox(
-      width: _widthDip,
-      height: _heightDip,
-      child: background(),
-    );
+    return background();
   }
 
   /// Container for board widgets
   Widget _boardItemContainer() {
     return SizedBox(
-      width: _widthDip,
-      height: _heightDip,
+      width: double.infinity,
+      height: double.infinity,
       child: MatrixGestureDetector(
         onScaleStart: () {},
         onScaleEnd: () {},
@@ -140,14 +140,14 @@ class _BoardViewState extends State<BoardView> {
         child: ValueListenableBuilder(
           valueListenable: widget.controller,
           builder: (
-            BuildContext context,
-            List<BoardItem> value,
-            Widget? child,
-          ) {
-            return Positioned(child: Stack(children: boardItemWidgets));
+              BuildContext context,
+              List<BoardItem> value,
+              Widget? child,
+              ) {
+            return Stack(children: boardItemWidgets);
           },
         ),
-      ),
+      )
     );
   }
 

@@ -4,8 +4,6 @@ import 'package:board/ui/board_list.dart';
 import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 
-import '../res/color.dart';
-
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
 
@@ -41,7 +39,7 @@ class _MenuPageState extends State<MenuPage> {
               children: <Widget>[
                 menuButton('New board', () {
                   var boardData = BoardData(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    id: DateTime.now().millisecondsSinceEpoch,
                     name: 'new board',
                     color: '#E3E9F2',
                     items: [],
@@ -76,13 +74,13 @@ class _MenuPageState extends State<MenuPage> {
 
   Widget menuButton(String label, VoidCallback onPress) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.only(bottom: 32),
       child: TextButton(
         style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.all<Color>(ColorRes.text),
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
         ),
         onPressed: onPress,
-        child: Text(label, style: TextStyle(fontSize: 24)),
+        child: Text(label, style: const TextStyle(fontSize: 24)),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:board/util/file.dart';
 import 'package:board/util/state.dart';
 import 'package:board/util/string.dart';
 import 'package:flutter/material.dart';
@@ -444,12 +445,13 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> saveBoard() async {
+  Future<bool> saveBoard() async {
     BoardController con = _boardController;
     BoardData board = widget.board;
     Directory packageDir = await getApplicationDocumentsDirectory();
-    String boardDir = '${packageDir.path}/boards/${board.id}';
-    String thumbPath = '$boardDir/thumbnail.jpg';
+    String packagePath = packageDir.path;
+    String boardDir = '$packagePath/boards/${board.id}';
+    String thumbPath = '$packagePath/thumbnails/${board.id}.jpg';
 
     board
       ..color = con.boardColor
@@ -457,16 +459,33 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
       ..items = con.items
       ..thumbnail = thumbPath;
 
-    await createThumbnail(board.thumbnail!);
+    // Create board thumbnail
+    Uint8List? imageBytes = await screenshotController.capture();
+    FileHelper.save(thumbPath, imageBytes);
 
+    saveBoardResources(con.items, boardDir);
+
+    var box = await Hive.openBox('boards');
+    box.put(board.id, board);
+
+    for (dynamic e in box.values) {
+      debugPrint(' dd');
+    }
+    return true;
+  }
+
+
+  /// Copy used resources (images..) from storage to package directory
+  /// and save resource path for reload saved boards
+  void saveBoardResources(List<BoardItem> items, String dir) {
     Map<String, String?> pathMap = {};
-    for (BoardItem item in con.items) {
+    for (BoardItem item in items) {
       if (item.isImageItem) {
         String storageImagePath = item.storageImagePath!;
         String imageName = path.basename(storageImagePath);
         String? existPath = pathMap[storageImagePath];
         if (existPath == null) {
-          String saveFilePath = '$boardDir/$imageName';
+          String saveFilePath = '$dir/$imageName';
           File(storageImagePath).copy(saveFilePath);
           pathMap[storageImagePath] = saveFilePath;
           item.savedImagePath = saveFilePath;
@@ -475,16 +494,5 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
         }
       }
     }
-
-    var box = await Hive.openBox('boards');
-    box.put('name', 'David');
-  }
-
-  Future createThumbnail(String path) async {
-    Uint8List? imageBytes = await screenshotController.capture();
-    if (imageBytes == null) return;
-    final String thumbPath = path;
-    File file = File(thumbPath);
-    file.writeAsBytesSync(imageBytes);
   }
 }

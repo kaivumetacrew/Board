@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 extension StateExtension on State {
+
   Future<R?> push<R extends Object?>(Widget page,
       {bool fullscreenDialog = false}) {
     return Navigator.of(context).push(
