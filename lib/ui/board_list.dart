@@ -5,6 +5,7 @@ import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
+import 'board/board_db.dart';
 import 'board/board_page.dart';
 
 class BoardListPage extends StatefulWidget {
@@ -15,7 +16,7 @@ class BoardListPage extends StatefulWidget {
 }
 
 class _BoardListPageState extends State<BoardListPage> {
-  List<BoardData> boards = [];
+  List<BoardDataDBO> boards = [];
 
   @override
   void initState() {
@@ -43,10 +44,10 @@ class _BoardListPageState extends State<BoardListPage> {
       padding: const EdgeInsets.all(4),
       itemCount: boards.length,
       itemBuilder: (context, index) {
-        BoardData item = boards[index];
+        BoardDataDBO item = boards[index];
         return GestureDetector(
           onTap: () {
-            push(BoardPage(board: item));
+            push(BoardPage(board: item.getUiData()));
           },
           onLongPress: () {
             _showItemDialog(item);
@@ -63,9 +64,9 @@ class _BoardListPageState extends State<BoardListPage> {
     );
   }
 
-  Widget _boardItem(BoardData item) {
+  Widget _boardItem(BoardDataDBO dbo) {
     Widget child;
-    final thumb = item.thumbnail;
+    final thumb = dbo.thumbnail;
     if (thumb != null) {
       child = Image.file(
         File(thumb),
@@ -93,14 +94,14 @@ class _BoardListPageState extends State<BoardListPage> {
   }
 
   Future _getBoards() async {
-    editBoardsData((Box<BoardData> box) {
+    editBoardsData((box) {
       setState(() {
         boards = box.values.toList();
       });
     });
   }
 
-  Future<void> _showItemDialog(BoardData board) async {
+  Future<void> _showItemDialog(BoardDataDBO board) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -126,9 +127,9 @@ class _BoardListPageState extends State<BoardListPage> {
     );
   }
 
-  Future _deleteBox(BoardData board) async {
-    editBoardsData((Box<BoardData> box) {
-      box.delete(board.id.toString());
+  Future _deleteBox(BoardDataDBO dbo) async {
+    editBoardsData((Box<BoardDataDBO> box) {
+      box.delete(dbo.id.toString());
       setState(() {
         boards = box.values.toList();
       });

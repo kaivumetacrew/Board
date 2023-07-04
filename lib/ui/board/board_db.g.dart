@@ -1,33 +1,32 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'board_model.dart';
+part of 'board_db.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class BoardDataAdapter extends TypeAdapter<BoardData> {
+class BoardDataDBOAdapter extends TypeAdapter<BoardDataDBO> {
   @override
   final int typeId = 1;
 
   @override
-  BoardData read(BinaryReader reader) {
+  BoardDataDBO read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return BoardData(
+    return BoardDataDBO(
       id: fields[0] as int,
       name: fields[1] as String,
       color: fields[3] as String?,
       image: fields[4] as String?,
       thumbnail: fields[2] as String?,
-      items: [],
     );
   }
 
   @override
-  void write(BinaryWriter writer, BoardData obj) {
+  void write(BinaryWriter writer, BoardDataDBO obj) {
     writer
       ..writeByte(5)
       ..writeByte(0)
@@ -48,7 +47,7 @@ class BoardDataAdapter extends TypeAdapter<BoardData> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BoardDataAdapter &&
+      other is BoardDataDBOAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

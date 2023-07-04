@@ -148,7 +148,7 @@ class DrawState extends State<DrawWidget> {
     screenSize = MediaQuery.of(context).size;
   }
 
-  void _addPoint(PointerEvent event, PointType type) {
+  void _addPoint(PointerEvent event, int pointType) {
     final Offset o = event.localPosition;
 
     // IF WIDGET IS USED WITHOUT DIMENSIONS, WE WILL FALLBACK TO SCREENSIZE
@@ -164,7 +164,7 @@ class DrawState extends State<DrawWidget> {
       // IF USER LEFT THE BOUNDARY AND ALSO RETURNED BACK
       // IN ONE MOVE, RETYPE IT AS TAP, AS WE DO NOT WANT TO
       // LINK IT WITH PREVIOUS POINT
-      PointType t = type;
+      int t = pointType;
       if (_isOutsideDrawField) {
         t = PointType.tap;
       }
@@ -598,16 +598,16 @@ class Point {
   double pressure;
 
   /// type of user display finger movement
-  PointType type;
+  int type;
 }
 
 /// type of user display finger movement
-enum PointType {
+class PointType {
   /// one touch on specific place - tap
-  tap,
+  static int tap = 1;
 
   /// finger touching the display and moving around
-  move,
+  static int move = 2;
 }
 
 class SampleDrawPainter extends CustomPainter {

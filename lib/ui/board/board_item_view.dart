@@ -152,7 +152,7 @@ class BoardItemView extends StatelessWidget {
     color: const Color.fromARGB(100, 163, 93, 65),
     child: CustomPaint(
       painter: PointPainter(
-          points: item.drawPoints,
+          points: item.drawPoints??[],
           strokeColor: item.uiDrawColor,
           strokeWidth: item.drawWidth,
           strokeCap: item.strokeCap,

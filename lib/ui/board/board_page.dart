@@ -15,6 +15,7 @@ import '../board_background.dart';
 import '../board_stickers.dart';
 import 'board_actionbar.dart';
 import 'board_controller.dart';
+import 'board_db.dart';
 import 'board_model.dart';
 import 'board_view.dart';
 import 'board_widget.dart';
@@ -453,31 +454,34 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   Future<bool> saveBoard() async {
     BoardController con = _boardController;
-    BoardData board = widget.board;
+    BoardDataDBO dbo = BoardDataDBO.map(widget.board);
     Directory packageDir = await getApplicationDocumentsDirectory();
     String packagePath = packageDir.path;
-    String boardDir = '$packagePath/boards/${board.id}';
-    String thumbPath = '$packagePath/thumbnails/${board.id}.jpg';
-
-    board
-      ..color = con.boardColor
-      ..image = con.boardImage
-      ..items = con.items
-      ..thumbnail = thumbPath;
+    String boardDir = '$packagePath/boards/${dbo.id}';
+    String thumbPath = '$packagePath/thumbnails/${dbo.id}.jpg';
 
     // Create board thumbnail
     Uint8List? imageBytes = await screenshotController.capture();
-    FileHelper.save(thumbPath, imageBytes);
+    await FileHelper.save(thumbPath, imageBytes);
+
+    List<BoardItemDBO> items = con.items.map((e) => BoardItemDBO.map(e)).toList();
+    dbo
+      ..color = con.boardColor
+      ..image = con.boardImage
+      //..items = items
+      ..thumbnail = thumbPath;
+
 
     saveBoardResources(con.items, boardDir);
 
-    await editBoardsData((Box<BoardData> box){
-      box.put(board.id.toString(), board);
+    await editBoardsData((Box<BoardDataDBO> box){
+      box.put(dbo.id.toString(), dbo);
       debugPrint('box boards values ${box.values.length}');
-      for (BoardData element in box.values) {
+      for (BoardDataDBO element in box.values) {
         debugPrint('box board item instance: ${element.id}');
       }
     });
+
     return true;
   }
 
@@ -486,20 +490,18 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   /// and save resource path for reload saved boards
   void saveBoardResources(List<BoardItem> items, String dir) {
     Map<String, String?> pathMap = {};
-    for (BoardItem item in items) {
-      if (item.isImageItem) {
-        String storageImagePath = item.storageImagePath!;
-        String imageName = path.basename(storageImagePath);
-        String? existPath = pathMap[storageImagePath];
-        if (existPath == null) {
-          String saveFilePath = '$dir/$imageName';
-          File(storageImagePath).copy(saveFilePath);
-          pathMap[storageImagePath] = saveFilePath;
-          item.savedImagePath = saveFilePath;
-        } else {
-          item.savedImagePath = existPath;
-        }
+    items.where((element) => element.isImageItem).forEach((item) {
+      String storageImagePath = item.storageImagePath!;
+      String imageName = path.basename(storageImagePath);
+      String? existPath = pathMap[storageImagePath];
+      if (existPath == null) {
+        String saveFilePath = '$dir/$imageName';
+        File(storageImagePath).copy(saveFilePath);
+        pathMap[storageImagePath] = saveFilePath;
+        item.savedImagePath = saveFilePath;
+      } else {
+        item.savedImagePath = existPath;
       }
-    }
+    });
   }
 }

@@ -140,7 +140,7 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
 
   void undoDraw() {
     final item =
-        value.reversed.firstWhere((element) => element.drawPoints.isNotEmpty);
+        value.reversed.firstWhere((element) => (element.drawPoints?.length??0) > 0);
     value.removeWhere((element) => element.id == item.id);
     notifyListeners();
   }

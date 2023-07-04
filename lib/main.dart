@@ -1,3 +1,4 @@
+import 'package:board/ui/board/board_db.dart';
 import 'package:board/ui/board/board_model.dart';
 import 'package:board/ui/menu.dart';
 import 'package:flutter/material.dart';
@@ -49,9 +50,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
-void initHive() async{
+void initHive() {
   Hive.initFlutter();
-  Hive.registerAdapter(BoardDataAdapter());
+  Hive.registerAdapter(BoardDataDBOAdapter());
 }
 
 
