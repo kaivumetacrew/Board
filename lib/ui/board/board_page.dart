@@ -453,6 +453,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Future<bool> saveBoard() async {
+    Future.delayed(const Duration(milliseconds: 300));
     BoardController con = _boardController;
     BoardDataDBO dbo = BoardDataDBO.map(widget.board);
     Directory packageDir = await getApplicationDocumentsDirectory();
@@ -463,25 +464,29 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     // Create board thumbnail
     Uint8List? imageBytes = await screenshotController.capture();
     await FileHelper.save(thumbPath, imageBytes);
+    saveBoardResources(con.items, boardDir);
 
-    List<BoardItemDBO> items = con.items.map((e) => BoardItemDBO.map(e)).toList();
     dbo
       ..color = con.boardColor
       ..image = con.boardImage
-      //..items = items
       ..thumbnail = thumbPath;
 
-
-    saveBoardResources(con.items, boardDir);
-
-    await editBoardsData((Box<BoardDataDBO> box){
+    await openBoardsBox((Box<BoardDataDBO> box) {
       box.put(dbo.id.toString(), dbo);
-      debugPrint('box boards values ${box.values.length}');
+      debugPrint('box board data length ${box.values.length}');
       for (BoardDataDBO element in box.values) {
-        debugPrint('box board item instance: ${element.id}');
+        debugPrint('box board data instance: ${element.id}');
       }
     });
-
+    var itemBox = await Hive.openBox<BoardItemDBO>(dbo.id.toString());
+    await itemBox.clear();
+    Iterable<BoardItemDBO> items = con.items.map((e) => BoardItemDBO.map(e));
+    debugPrint('box board item values ${itemBox.values.length}');
+    await itemBox.addAll(items);
+    for (BoardItemDBO element in itemBox.values) {
+      debugPrint('box board item instance: ${element.id}');
+    }
+    itemBox.close();
     return true;
   }
 

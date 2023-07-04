@@ -1,11 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:board/ui/board/board_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-
-import 'board_draw.dart';
-
 
 part 'board_db.g.dart';
 
@@ -29,13 +24,12 @@ class BoardDataDBO {
   @HiveField(4)
   String? image;
 
-  // @HiveField(5)
-  // List<BoardItemDBO> items = [];
+  List<BoardItemDBO>? items;
 
   BoardDataDBO({
     required this.id,
     required this.name,
-    //required this.items,
+    this.items,
     this.color,
     this.image,
     this.thumbnail,
@@ -45,18 +39,20 @@ class BoardDataDBO {
     final dbo = BoardDataDBO(
         id: data.id,
         name: data.name,
-        //items: [],
+        items: [],
         color: data.color,
         image: data.image);
     return dbo;
   }
 
-  BoardData getUiData() {
-    //final boardItems = items.map((e) => e.getUiItem()).toList(growable: true);
+  Future<BoardData> getUiData() async {
+    var box = await Hive.openBox<BoardItemDBO>(id.toString());
+    items = box.values.toList();
+    final boardItems = items?.map((e) => e.getUiItem()).toList(growable: true);
     final data = BoardData(
       id: id,
       name: name,
-      items: [],
+      items: boardItems ?? [],
     );
     data.color = color;
     data.image = image;
@@ -64,17 +60,34 @@ class BoardDataDBO {
   }
 }
 
+@HiveType(typeId: 2)
 class BoardItemDBO {
+  @HiveField(0)
   int id;
+
+  @HiveField(1)
   int lastUpdate = 0;
+
+  @HiveField(2)
   String? text;
+
+  @HiveField(3)
   String? font;
+
+  @HiveField(4)
   String? textColor;
+
+  @HiveField(5)
   String? imagePath;
+
+  @HiveField(6)
   String? sticker;
+
+  @HiveField(7)
   String? drawColor;
-  List<Point>? drawPoints;
-  Float64List? matrix; //Matrix4.fromFloat64List(this._m4storage);
+
+  //List<Point>? drawPoints;
+  //Float64List? matrix; //Matrix4.fromFloat64List(this._m4storage);
 
   BoardItemDBO({required this.id});
 
@@ -86,9 +99,9 @@ class BoardItemDBO {
       ..textColor = item.textColor
       ..imagePath = item.imagePath
       ..sticker = item.sticker
-      ..drawColor = item.drawColor
-      ..drawPoints = item.drawPoints
-      ..matrix = item.matrix.storage;
+      ..drawColor = item.drawColor;
+    //..drawPoints = item.drawPoints
+    //..matrix = item.matrix.storage;
 
     return data;
   }
@@ -101,16 +114,17 @@ class BoardItemDBO {
       ..textColor = textColor
       ..savedImagePath = imagePath
       ..sticker = sticker
-      ..drawColor = drawColor
-      ..drawPoints = drawPoints;
-    final mt =
-    matrix != null ? Matrix4.fromFloat64List(matrix!) : Matrix4.identity();
-    item.matrixNotifier = ValueNotifier(mt);
+      ..drawColor = drawColor;
+
+    // item.drawPoints = drawPoints;
+    // final mt = matrix != null ? Matrix4.fromFloat64List(matrix!) : Matrix4.identity();
+    // item.matrixNotifier = ValueNotifier(mt);
+    item.matrixNotifier = ValueNotifier(Matrix4.identity());
     return item;
   }
 }
 
-Future<void> editBoardsData(Function(Box<BoardDataDBO> box) block) async {
+Future<void> openBoardsBox(Function(Box<BoardDataDBO> box) block) async {
   var box = await Hive.openBox<BoardDataDBO>('boards');
   block(box);
   box.close();

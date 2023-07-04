@@ -51,3 +51,58 @@ class BoardDataDBOAdapter extends TypeAdapter<BoardDataDBO> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class BoardItemDBOAdapter extends TypeAdapter<BoardItemDBO> {
+  @override
+  final int typeId = 2;
+
+  @override
+  BoardItemDBO read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return BoardItemDBO(
+      id: fields[0] as int,
+    )
+      ..lastUpdate = fields[1] as int
+      ..text = fields[2] as String?
+      ..font = fields[3] as String?
+      ..textColor = fields[4] as String?
+      ..imagePath = fields[5] as String?
+      ..sticker = fields[6] as String?
+      ..drawColor = fields[7] as String?;
+  }
+
+  @override
+  void write(BinaryWriter writer, BoardItemDBO obj) {
+    writer
+      ..writeByte(8)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.lastUpdate)
+      ..writeByte(2)
+      ..write(obj.text)
+      ..writeByte(3)
+      ..write(obj.font)
+      ..writeByte(4)
+      ..write(obj.textColor)
+      ..writeByte(5)
+      ..write(obj.imagePath)
+      ..writeByte(6)
+      ..write(obj.sticker)
+      ..writeByte(7)
+      ..write(obj.drawColor);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BoardItemDBOAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}

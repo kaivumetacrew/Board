@@ -9,9 +9,10 @@ class FileHelper{
     if (bytes == null) return '';
     try{
       File file = File(thumbPath);
-      if(!file.existsSync()){
-        file.create(recursive: true);
+      if (file.existsSync()) {
+        file.deleteSync();
       }
+      file.create(recursive: true);
       file.writeAsBytesSync(bytes);
       return thumbPath;
     }on Exception catch (_) {

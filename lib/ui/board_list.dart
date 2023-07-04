@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:board/ui/board/board_model.dart';
 import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -47,7 +46,16 @@ class _BoardListPageState extends State<BoardListPage> {
         BoardDataDBO item = boards[index];
         return GestureDetector(
           onTap: () {
-            push(BoardPage(board: item.getUiData()));
+            getData() async {
+              return item.getUiData();
+            }
+
+            getData().then((value) {
+              push(BoardPage(board: value)).then((value) {
+                imageCache.clear();
+                _getBoards();
+              });
+            });
           },
           onLongPress: () {
             _showItemDialog(item);
@@ -94,7 +102,7 @@ class _BoardListPageState extends State<BoardListPage> {
   }
 
   Future _getBoards() async {
-    editBoardsData((box) {
+    openBoardsBox((box) {
       setState(() {
         boards = box.values.toList();
       });
@@ -128,7 +136,7 @@ class _BoardListPageState extends State<BoardListPage> {
   }
 
   Future _deleteBox(BoardDataDBO dbo) async {
-    editBoardsData((Box<BoardDataDBO> box) {
+    openBoardsBox((Box<BoardDataDBO> box) {
       box.delete(dbo.id.toString());
       setState(() {
         boards = box.values.toList();

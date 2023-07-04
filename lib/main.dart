@@ -1,13 +1,13 @@
 import 'package:board/ui/board/board_db.dart';
-import 'package:board/ui/board/board_model.dart';
 import 'package:board/ui/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 
+bool hadInitHive = false;
+
 void main() {
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -51,9 +51,10 @@ class MyApp extends StatelessWidget {
 }
 
 void initHive() {
-  Hive.initFlutter();
-  Hive.registerAdapter(BoardDataDBOAdapter());
+  if (!hadInitHive) {
+    hadInitHive = true;
+    Hive.initFlutter();
+    Hive.registerAdapter(BoardDataDBOAdapter());
+    Hive.registerAdapter(BoardItemDBOAdapter());
+  }
 }
-
-
-
