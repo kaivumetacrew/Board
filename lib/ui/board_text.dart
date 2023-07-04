@@ -118,8 +118,8 @@ class _TextPageState extends State<TextPage> {
       padding: const EdgeInsets.only(left: 0, right: 0),
       itemCount: fontList.length,
       itemBuilder: (context, index) {
-        var item = fontList[index];
-        var checkIcon = item == _selectedFont
+        final item = fontList[index];
+        final checkIcon = item == _selectedFont
             ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
             : const SizedBox();
 

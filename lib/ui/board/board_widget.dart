@@ -15,7 +15,7 @@ extension BoardPageExtension on BoardPageState {
     Color backgroundColor = Colors.white,
     required VoidCallback onPressed,
   }) {
-    var iconWidget = icon == null
+    final iconWidget = icon == null
         ? const SizedBox()
         : Icon(
             icon,
@@ -65,8 +65,8 @@ extension BoardPageExtension on BoardPageState {
       '#546E7A',
     ];
 
-    var row = 2;
-    var size = (imageButtonSize * row + row * 2);
+    final row = 2;
+    final size = (imageButtonSize * row + row * 2);
     return SizedBox(
       width: isPortrait ? double.infinity : size,
       height: isPortrait ? size : double.infinity,
@@ -78,7 +78,7 @@ extension BoardPageExtension on BoardPageState {
           padding: const EdgeInsets.only(left: 0, right: 0),
           itemCount: colorList.length,
           itemBuilder: (context, index) {
-            var color = colorList[index];
+            final color = colorList[index];
             return imageButton(
                 backgroundColor: fromHex(color),
                 onPressed: () {
@@ -104,7 +104,7 @@ extension BoardPageExtension on BoardPageState {
         maxHeight: 6000,
         imageQuality: 100,
       );
-      var file = File(pickedFile!.path!);
+      final file = File(pickedFile!.path!);
       return file;
     } catch (e) {
       return null;

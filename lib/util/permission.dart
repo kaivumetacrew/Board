@@ -21,7 +21,7 @@ requestPermissions(
   List<Permission> deniedPermission = [];
   Map<Permission, PermissionStatus> statuses = await permissions.request();
   for (var element in permissions) {
-    var status = statuses[element];
+    final status = statuses[element];
     if (status == null) {
       deniedPermission.add(element);
       continue;

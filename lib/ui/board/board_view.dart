@@ -115,11 +115,11 @@ class _BoardViewState extends State<BoardView> {
 
   Widget _boardBackground() {
     Widget background() {
-      var image = _controller.boardImage;
+      final image = _controller.boardImage;
       if (image != null) {
         return Image.asset(boardPath(image), fit: BoxFit.cover);
       }
-      var color = _controller.boardColor;
+      final color = _controller.boardColor;
       if (color != null) {
         return Container(color: fromHex(color));
       }

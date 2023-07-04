@@ -46,7 +46,7 @@ class _StickerPageState extends State<StickerPage> {
       padding: const EdgeInsets.all(1),
       itemCount: stickerList.length,
       itemBuilder: (context, index) {
-        var item = stickerList[index];
+        final item = stickerList[index];
         return GestureDetector(
           onTap: () {
             setState(() {

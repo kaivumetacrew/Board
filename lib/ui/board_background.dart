@@ -131,7 +131,7 @@ class _BackgroundPageState extends State<BackgroundPage> {
       padding: const EdgeInsets.all(1),
       itemCount: list.length,
       itemBuilder: (context, index) {
-        var item = list[index];
+        final item = list[index];
         return GestureDetector(
           onTap: () {
             onItemTap(item);

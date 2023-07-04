@@ -65,7 +65,7 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
     int index = value.indexWhere((element) => element == selectedItem);
     int prevIndex = index - 1;
     if (index >= 0 && prevIndex < value.length) {
-      var prevItem = value[prevIndex];
+      final prevItem = value[prevIndex];
       int tempId = selectedItem.lastUpdate;
       selectedItem.lastUpdate = prevItem.lastUpdate;
       prevItem.lastUpdate = tempId;
@@ -141,7 +141,7 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   }
 
   void undoDraw() {
-    var item =
+    final item =
         value.reversed.firstWhere((element) => element.drawPoints.isNotEmpty);
     value.removeWhere((element) => element.id == item.id);
     notifyListeners();

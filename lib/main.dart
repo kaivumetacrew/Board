@@ -7,7 +7,6 @@ void main() {
   runApp(const MyApp());
 }
 
-List<BoardData> myBoards = [];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -15,7 +14,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    Hive.initFlutter();
+    initHive();
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
@@ -48,6 +47,11 @@ class MyApp extends StatelessWidget {
       home: const MenuPage(),
     );
   }
+}
+
+void initHive() async{
+  Hive.initFlutter();
+  Hive.registerAdapter(BoardDataAdapter());
 }
 
 

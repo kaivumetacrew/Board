@@ -6,6 +6,12 @@ import 'package:hive/hive.dart';
 
 part 'board_model.g.dart';
 
+Future<void> editBoardsData(Function(Box<BoardData> box) block) async{
+  final box  = await Hive.openBox<BoardData>('boards');
+  block(box);
+  box.close();
+}
+
 @HiveType(typeId: 1)
 class BoardData {
   @HiveField(0)

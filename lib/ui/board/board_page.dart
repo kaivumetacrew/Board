@@ -87,7 +87,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
             icon: const Icon(Icons.save),
             onPressed: () {
               _boardController.deselectItem();
-              showSnackBar('on development');
+              showSnackBar('saved');
               saveBoard().then((value) {
                 Navigator.pop(context);
               });
@@ -360,7 +360,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   /// Image
   Future<void> _pickGalleryImage() async {
-    var file = await pickImage();
+    final file = await pickImage();
     if (file == null) return;
     _boardController.addNewItem((item) {
       item.storageImagePath = file.path;
@@ -465,12 +465,13 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
     saveBoardResources(con.items, boardDir);
 
-    var box = await Hive.openBox('boards');
-    box.put(board.id, board);
-
-    for (dynamic e in box.values) {
-      debugPrint(' dd');
-    }
+    await editBoardsData((Box<BoardData> box){
+      box.put(board.id.toString(), board);
+      debugPrint('box boards values ${box.values.length}');
+      for (BoardData element in box.values) {
+        debugPrint('box board item instance: ${element.id}');
+      }
+    });
     return true;
   }
 

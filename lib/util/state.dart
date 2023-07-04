@@ -17,13 +17,14 @@ extension StateExtension on State {
 
   void showToast(String? s) {
     Fluttertoast.showToast(
-        msg: s ?? 'null',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.white,
-        textColor: Colors.black,
-        fontSize: 16.0);
+      msg: s ?? 'null',
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.white,
+      textColor: Colors.black,
+      fontSize: 16.0,
+    );
   }
 
   void showSnackBar(String? s) {

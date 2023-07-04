@@ -13,8 +13,8 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage> {
   Widget sampleItem(Color color) {
-    var screenWidth = screenSize.width;
-    var itemWidth = screenWidth;
+    final screenWidth = screenSize.width;
+    final itemWidth = screenWidth;
     return Positioned(
       top: 0,
       left: 0,
@@ -38,7 +38,7 @@ class _MenuPageState extends State<MenuPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 menuButton('New board', () {
-                  var boardData = BoardData(
+                  final boardData = BoardData(
                     id: DateTime.now().millisecondsSinceEpoch,
                     name: 'new board',
                     color: '#E3E9F2',
