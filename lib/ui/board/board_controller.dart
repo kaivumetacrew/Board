@@ -5,11 +5,8 @@ import 'board_draw.dart';
 import 'board_model.dart';
 
 class BoardController extends ValueNotifier<List<BoardItem>> {
-  BoardController({
-    required this.items,
-    this.boardColor,
-    this.boardImage,
-  }) : super(items);
+
+  BoardController(this.items) : super(items);
 
   List<BoardItem> items;
   BoardItem selectedItem = BoardItem.none;

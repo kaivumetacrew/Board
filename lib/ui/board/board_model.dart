@@ -29,6 +29,7 @@ class BoardData {
   @HiveField(4)
   String? image;
 
+  @HiveField(5)
   List<BoardItem> items;
 
   BoardData({
@@ -74,9 +75,6 @@ class BoardItem {
 
   /// Position
   ValueNotifier<Matrix4> matrixNotifier = ValueNotifier(Matrix4.identity());
-  bool isLockRotate = true;
-  bool isLockScale = true;
-  bool isLockMove = true;
   int lastUpdate = 0;
 
   //Matrix4 translationDeltaMatrix = Matrix4.identity();

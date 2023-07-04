@@ -40,7 +40,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
 
   final GlobalKey _widgetKey = GlobalKey();
   ScreenshotController screenshotController = ScreenshotController();
-  final BoardController _boardController = BoardController(items: []);
+  final BoardController _boardController = BoardController([]);
   final ActionBarController _actionBarController =
       ActionBarController(ActionItem.none);
 
@@ -50,9 +50,11 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     lockPortrait();
+    final board = widget.board;
     _boardController
-      ..boardColor = widget.board.color
-      ..boardImage = widget.board.image
+      ..items = board.items
+      ..boardColor = board.color
+      ..boardImage = board.image
       ..onItemTap = (item) {
         if (item.isNone) {
           _boardController.deselectItem();
