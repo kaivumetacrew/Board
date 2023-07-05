@@ -1,5 +1,5 @@
 import 'package:board/ui/board/board_db.dart';
-import 'package:board/ui/menu.dart';
+import 'package:board/ui/board_list.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
           color: Colors.blue, //<-- SEE HERE
         ),
       ),
-      home: const MenuPage(),
+      home: BoardListPage(),
     );
   }
 }

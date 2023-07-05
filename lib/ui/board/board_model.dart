@@ -1,11 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:board/ui/board/board_draw.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 
 import '../../util/color.dart';
-import 'board_db.dart';
 
 class BoardData {
   int id;
@@ -90,7 +86,4 @@ class BoardItem {
   bool get isStickerItem => sticker != null;
 
   bool get isDrawItem => drawPoints != null && drawPoints!.isNotEmpty;
-
-
 }
-

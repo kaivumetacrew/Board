@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import 'board/board_db.dart';
+import 'board/board_model.dart';
 import 'board/board_page.dart';
 
 class BoardListPage extends StatefulWidget {
@@ -41,10 +42,28 @@ class _BoardListPageState extends State<BoardListPage> {
       ),
       shrinkWrap: false,
       padding: const EdgeInsets.all(4),
-      itemCount: boards.length,
+      itemCount: boards.length + 1,
       itemBuilder: (context, index) {
-        BoardDataDBO item = boards[index];
-        return GestureDetector(
+        if (index == 0) {
+          return _itemWidget(
+            child: _newBoardItem(),
+            onTap: () {
+              final boardData = BoardData(
+                id: DateTime.now().millisecondsSinceEpoch,
+                name: 'new board',
+                color: '#E3E9F2',
+                items: [],
+              );
+              push(BoardPage(board: boardData)).then((value) {
+                imageCache.clear();
+                _getBoards();
+              });
+            },
+          );
+        }
+        BoardDataDBO item = boards[index - 1];
+        return _itemWidget(
+          child: _boardItem(item),
           onTap: () {
             getData() async {
               return item.getUiData();
@@ -60,28 +79,46 @@ class _BoardListPageState extends State<BoardListPage> {
           onLongPress: () {
             _showItemDialog(item);
           },
-          child: Padding(
-            padding: const EdgeInsets.all(1),
-            child: SizedBox(
-              width: double.infinity,
-              child: _boardItem(item),
-            ),
-          ),
         );
       },
     );
   }
 
+  Widget _itemWidget({
+    required Widget child,
+    GestureTapCallback? onTap,
+    GestureLongPressCallback? onLongPress,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Padding(
+        padding: const EdgeInsets.all(1),
+        child: SizedBox(
+          width: double.infinity,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey, width: 1),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _boardItem(BoardDataDBO dbo) {
-    Widget child;
     final thumb = dbo.thumbnail;
     if (thumb != null) {
-      child = Image.file(
+      return Image.file(
         File(thumb),
         fit: BoxFit.cover,
       );
     } else {
-      child = const Center(
+      return const Center(
         child: Text(
           'could not load\nimage',
           textAlign: TextAlign.center,
@@ -89,14 +126,13 @@ class _BoardListPageState extends State<BoardListPage> {
         ),
       );
     }
+  }
 
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey, width: 1),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(2),
-        child: child,
+  Widget _newBoardItem() {
+    return const Center(
+      child: Icon(
+        Icons.add,
+        color: Colors.grey,
       ),
     );
   }

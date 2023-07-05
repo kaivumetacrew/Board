@@ -50,9 +50,11 @@ class _ActionBarState extends State<ActionBar> {
     double size = 70;
     return ValueListenableBuilder(
       valueListenable: widget.controller,
-      builder: (BuildContext context,
-          ActionItem value,
-          Widget? child,) {
+      builder: (
+        BuildContext context,
+        ActionItem value,
+        Widget? child,
+      ) {
         return Container(
           color: Colors.white,
           width: widget.axis == Axis.horizontal ? double.infinity : size,
@@ -72,7 +74,7 @@ class _ActionBarState extends State<ActionBar> {
 
   Widget _actionButton(ActionItem item) {
     Color iconColor =
-    (item.selectable && selectedAction == item) ? Colors.blue : Colors.grey;
+        (item.selectable && selectedAction == item) ? Colors.blue : Colors.grey;
     List<Widget> components = [];
     if (widget.iconVisible) {
       components.add(IconButton(
@@ -157,5 +159,4 @@ class ActionItem {
     }
     return ActionItem.none;
   }
-
 }

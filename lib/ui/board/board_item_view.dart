@@ -37,19 +37,19 @@ class BoardItemView extends StatelessWidget {
 
   /// Border of selected item
   Widget get _boardItemBorder => Positioned(
-    top: 0,
-    bottom: 0,
-    right: 0,
-    left: 0,
-    child: Container(
-      decoration: BoxDecoration(
-          border: Border.all(color: Colors.black, width: 0.5)),
-      child: Container(
-        decoration: BoxDecoration(
-            border: Border.all(color: Colors.white, width: 0.5)),
-      ),
-    ),
-  );
+        top: 0,
+        bottom: 0,
+        right: 0,
+        left: 0,
+        child: Container(
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black, width: 0.5)),
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 0.5)),
+          ),
+        ),
+      );
 
   Widget _positionedItem(Widget itemWidget) {
     return Transform(
@@ -149,14 +149,14 @@ class BoardItemView extends StatelessWidget {
   Widget get _animatedImage => _animatedItem(_image(item));
 
   Widget get _drawWidget => Container(
-    color: const Color.fromARGB(100, 163, 93, 65),
-    child: CustomPaint(
-      painter: PointPainter(
-          points: item.drawPoints??[],
-          strokeColor: item.uiDrawColor,
-          strokeWidth: item.drawWidth,
-          strokeCap: item.strokeCap,
-          strokeJoin: item.strokeJoin),
-    ),
-  );
+        color: const Color.fromARGB(100, 163, 93, 65),
+        child: CustomPaint(
+          painter: PointPainter(
+              points: item.drawPoints ?? [],
+              strokeColor: item.uiDrawColor,
+              strokeWidth: item.drawWidth,
+              strokeCap: item.strokeCap,
+              strokeJoin: item.strokeJoin),
+        ),
+      );
 }

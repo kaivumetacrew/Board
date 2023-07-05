@@ -60,7 +60,6 @@ class BoardDataDBO {
     data.image = image;
     return data;
   }
-
 }
 
 @HiveType(typeId: 2)
@@ -136,7 +135,8 @@ class BoardItemDBO {
 
     // convert string to Float64List
     if (item.isImageItem || item.isTextItem || item.isStickerItem) {
-      List<double>? matrixData = matrix?.split(';').map((e) => double.parse(e))?.toList();
+      List<double>? matrixData =
+          matrix?.split(';').map((e) => double.parse(e))?.toList();
       final mt = matrix != null
           ? Matrix4.fromFloat64List(Float64List.fromList(matrixData!!))
           : Matrix4.identity();
@@ -152,7 +152,6 @@ class BoardItemDBO {
 
     return item;
   }
-
 }
 
 Future<void> openBoardsBox(Function(Box<BoardDataDBO> box) block) async {

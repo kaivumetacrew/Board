@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0ef95b16-93f7-42c7-9ae6-b52c1113fae0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../lib/ui/board/board_db.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../lib/ui/board/board_db.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../lib/ui/board/board_db.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../lib/ui/board/board_db.g.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../lib/ui/board/board_draw.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../lib/ui/board/board_draw.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../lib/util/file.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../lib/util/file.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +21,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2Rjnfn1ZuJLIfnF7H0R2eeodiZk" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />

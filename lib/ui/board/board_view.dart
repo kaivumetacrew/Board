@@ -99,9 +99,11 @@ class _BoardViewState extends State<BoardView> {
   Widget _boardBackgroundListener() {
     return ValueListenableBuilder(
       valueListenable: _controller.isChangeBackgroundNotifier,
-      builder: (BuildContext context,
-          bool value,
-          Widget? child,) {
+      builder: (
+        BuildContext context,
+        bool value,
+        Widget? child,
+      ) {
         return Positioned(
           top: 0,
           bottom: 0,
@@ -125,39 +127,41 @@ class _BoardViewState extends State<BoardView> {
       }
       return Container(color: Colors.white);
     }
+
     return background();
   }
 
   /// Container for board widgets
   Widget _boardItemContainer() {
     return SizedBox(
-      width: double.infinity,
-      height: double.infinity,
-      child: MatrixGestureDetector(
-        onScaleStart: () {},
-        onScaleEnd: () {},
-        onMatrixUpdate: _onMatrixUpdate,
-        child: ValueListenableBuilder(
-          valueListenable: widget.controller,
-          builder: (
+        width: double.infinity,
+        height: double.infinity,
+        child: MatrixGestureDetector(
+          onScaleStart: () {},
+          onScaleEnd: () {},
+          onMatrixUpdate: _onMatrixUpdate,
+          child: ValueListenableBuilder(
+            valueListenable: widget.controller,
+            builder: (
               BuildContext context,
               List<BoardItem> value,
               Widget? child,
-              ) {
-            return Stack(children: boardItemWidgets);
-          },
-        ),
-      )
-    );
+            ) {
+              return Stack(children: boardItemWidgets);
+            },
+          ),
+        ));
   }
 
   /// Container for user draw by finger
   Widget _boardPaintingContainer() {
     return ValueListenableBuilder(
       valueListenable: _controller.isDrawingNotifier,
-      builder: (BuildContext context,
-          bool value,
-          Widget? child,) {
+      builder: (
+        BuildContext context,
+        bool value,
+        Widget? child,
+      ) {
         if (value) {
           return Positioned(
             top: 0,
@@ -178,11 +182,13 @@ class _BoardViewState extends State<BoardView> {
   }
 
   /// Callback on gesture
-  void _onMatrixUpdate(MatrixGestureDetectorState state,
-      Matrix4 matrix,
-      Matrix4 translationDeltaMatrix,
-      Matrix4 scaleDeltaMatrix,
-      Matrix4 rotationDeltaMatrix,) {
+  void _onMatrixUpdate(
+    MatrixGestureDetectorState state,
+    Matrix4 matrix,
+    Matrix4 translationDeltaMatrix,
+    Matrix4 scaleDeltaMatrix,
+    Matrix4 rotationDeltaMatrix,
+  ) {
     if (_controller.isDrawing) {
       return;
     }

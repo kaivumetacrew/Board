@@ -170,7 +170,6 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     _boardScale = _boardFoldedDipWidth / boardWidthDip;
   }
 
-
   /// Transform BoardView to fit screen
   Widget _boardView() {
     if (_isPortrait) {
@@ -195,7 +194,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget _transformBoardView() {
-    if(_isPortrait){
+    if (_isPortrait) {
       return Container(
         width: screenSize.width,
         height: screenSize.width / BoardView.ratio,
@@ -503,7 +502,6 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     await itemBox.close();
     return true;
   }
-
 
   /// Copy used resources (images..) from storage to package directory
   /// and save resource path for reload saved boards

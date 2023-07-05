@@ -5,7 +5,6 @@ import 'board_draw.dart';
 import 'board_model.dart';
 
 class BoardController extends ValueNotifier<List<BoardItem>> {
-
   List<BoardItem> items;
   BoardItem selectedItem = BoardItem.none;
   Function(BoardItem) onItemTap = (item) {};
@@ -121,12 +120,12 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
     );
     item.lastUpdate = DateTime.now().millisecondsSinceEpoch;
     block(item);
-    if(item.isDrawItem){
-      item.drawColor =  currentDrawColor;
-    }else{
+    if (item.isDrawItem) {
+      item.drawColor = currentDrawColor;
+    } else {
       stopDraw();
     }
-    if(item.isTextItem) {
+    if (item.isTextItem) {
       item.textColor = currentTextColor;
     }
 
@@ -139,8 +138,8 @@ class BoardController extends ValueNotifier<List<BoardItem>> {
   }
 
   void undoDraw() {
-    final item =
-        value.reversed.firstWhere((element) => (element.drawPoints?.length??0) > 0);
+    final item = value.reversed
+        .firstWhere((element) => (element.drawPoints?.length ?? 0) > 0);
     value.removeWhere((element) => element.id == item.id);
     notifyListeners();
   }
