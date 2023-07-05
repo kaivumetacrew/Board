@@ -361,9 +361,10 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   Future<void> _pickText(BoardItem selectedItem) async {
     pickText(
       currentText: selectedItem.text,
-      currentFont: selectedItem.font,
+      currentFont: selectedItem.font ?? _boardController.currentFont,
       onResult: (text, font) {
         if (selectedItem == BoardItem.none) {
+          _boardController.currentFont = font;
           _boardController.addNewItem((item) {
             item.text = text;
             item.font = font;
