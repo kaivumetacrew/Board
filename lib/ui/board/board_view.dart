@@ -84,6 +84,7 @@ class _BoardViewState extends State<BoardView> {
 
   Widget _itemToWidget(BoardItem e) {
     return BoardItemView(
+      key: Key(e.id.toString()),
       item: e,
       isSelected: e.equal(_selectedItem),
       onTap: (e) {

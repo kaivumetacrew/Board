@@ -25,6 +25,7 @@ class BoardData {
 
 class BoardItem {
   late int id;
+  Key? key;
   int lastUpdate = 0;
 
   // Text
@@ -58,9 +59,7 @@ class BoardItem {
 
   Matrix4 get matrix => matrixNotifier.value;
 
-  BoardItem({
-    required this.id,
-  });
+  BoardItem({required this.id, this.key});
 
   bool equal(BoardItem? item) {
     if (item == null) return false;

@@ -175,11 +175,21 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
     if (_isPortrait) {
       // ui for portrait layout
       _boardFoldedDipWidth = 0;
-      return _transformBoardView();
+      return Container(
+        width: screenSize.width,
+        height: screenSize.width / BoardView.ratio,
+        color: Colors.yellow,
+        child: _transformBoardView(),
+      );
     }
     // ui for fold layout
     if (_boardFoldedDipWidth > 0) {
-      return _transformBoardView();
+      return Container(
+        width: _boardFoldedDipWidth,
+        height: _boardFoldedDipWidth / BoardView.ratio,
+        color: Colors.yellow,
+        child: _transformBoardView(),
+      );
     }
     return WidgetSizeOffsetWrapper(
       onSizeChange: (Size size) {
@@ -194,57 +204,15 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   }
 
   Widget _transformBoardView() {
-    if (_isPortrait) {
-      return Container(
-        width: screenSize.width,
-        height: screenSize.width / BoardView.ratio,
-        color: Colors.yellow,
-        child: Center(
-          child: Transform.scale(
-            scale: _boardScale,
-            alignment: Alignment.center,
-            child: Screenshot(
-              controller: screenshotController,
-              child: BoardView(
-                data: widget.board,
-                controller: _boardController,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return Container(
-      width: _boardFoldedDipWidth,
-      height: _boardFoldedDipWidth / BoardView.ratio,
-      color: Colors.yellow,
-      child: Center(
-        child: Transform.scale(
-          scale: _boardScale,
-          alignment: Alignment.center,
-          child: Screenshot(
-            controller: screenshotController,
-            child: BoardView(
-              data: widget.board,
-              controller: _boardController,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    return AspectRatio(
-      aspectRatio: BoardView.ratio,
-      child: Center(
-        child: Transform.scale(
-          scale: _boardScale,
-          alignment: Alignment.topLeft,
-          child: Screenshot(
-            controller: screenshotController,
-            child: BoardView(
-              data: widget.board,
-              controller: _boardController,
-            ),
+    return Center(
+      child: Transform.scale(
+        scale: _boardScale,
+        alignment: Alignment.center,
+        child: Screenshot(
+          controller: screenshotController,
+          child: BoardView(
+            data: widget.board,
+            controller: _boardController,
           ),
         ),
       ),
