@@ -156,7 +156,7 @@ class _BoardListPageState extends State<BoardListPage> {
             TextButton(
               child: const Text('Delete'),
               onPressed: () {
-                _deleteBox(board).then((value) => Navigator.pop(context));
+                _deleteBoard(board).then((value) => Navigator.pop(context));
               },
             ),
             TextButton(
@@ -171,7 +171,7 @@ class _BoardListPageState extends State<BoardListPage> {
     );
   }
 
-  Future _deleteBox(BoardDataDBO dbo) async {
+  Future _deleteBoard(BoardDataDBO dbo) async {
     openBoardsBox((Box<BoardDataDBO> box) {
       box.delete(dbo.id.toString());
       setState(() {
