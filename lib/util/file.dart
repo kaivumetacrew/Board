@@ -12,7 +12,7 @@ class FileHelper{
       if (file.existsSync()) {
         file.deleteSync();
       }
-      file.create(recursive: true);
+      file.createSync(recursive: true);
       file.writeAsBytesSync(bytes);
       return thumbPath;
     }on Exception catch (_) {

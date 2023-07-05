@@ -72,13 +72,14 @@ class BoardItemDBOAdapter extends TypeAdapter<BoardItemDBO> {
       ..imagePath = fields[5] as String?
       ..sticker = fields[6] as String?
       ..drawColor = fields[7] as String?
-      ..matrix = fields[8] as String?;
+      ..matrix = fields[8] as String?
+      ..drawPoints = fields[9] as String?;
   }
 
   @override
   void write(BinaryWriter writer, BoardItemDBO obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -96,7 +97,9 @@ class BoardItemDBOAdapter extends TypeAdapter<BoardItemDBO> {
       ..writeByte(7)
       ..write(obj.drawColor)
       ..writeByte(8)
-      ..write(obj.matrix);
+      ..write(obj.matrix)
+      ..writeByte(9)
+      ..write(obj.drawPoints);
   }
 
   @override

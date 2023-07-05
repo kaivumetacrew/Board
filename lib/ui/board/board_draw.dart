@@ -599,6 +599,20 @@ class Point {
 
   /// type of user display finger movement
   int type;
+
+  Map<String, dynamic> toJson() => {
+        'x': offset.dx,
+        'y': offset.dy,
+        'pressure': pressure,
+        'type': type,
+      };
+
+  static Point fromJson(Map<String, dynamic> json) {
+    Offset offset = Offset(json['x'], json['y']);
+    double pressure = json['pressure'];
+    int type = json['type'];
+    return Point(offset, type, pressure);
+  }
 }
 
 /// type of user display finger movement

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:board/ui/board/board_draw.dart' as draw;
 import 'package:board/ui/board/board_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -90,7 +92,8 @@ class BoardItemDBO {
   @HiveField(8)
   String? matrix; //Matrix4.fromFloat64List(this._m4storage);
 
-  //List<Point>? drawPoints;
+  @HiveField(9)
+  String? drawPoints;
 
   BoardItemDBO({required this.id});
 
@@ -104,13 +107,19 @@ class BoardItemDBO {
       ..sticker = item.sticker
       ..drawColor = item.drawColor;
 
+    // convert item.matrix.storage (Float64List) to string
     if (item.isImageItem || item.isTextItem || item.isStickerItem) {
       Float64List matrixStorage = item.matrix.storage;
       String stringList = matrixStorage.join(';');
       data.matrix = stringList;
     }
 
-    //data.drawPoints = item.drawPoints
+    // convert item.drawPoints (List<Point>) to string of json array
+    if (item.isDrawItem) {
+      final pointList = item.drawPoints?.map((e) => e.toJson()).toList();
+      final jsonArray = json.encode(pointList);
+      data.drawPoints = jsonArray;
+    }
 
     return data;
   }
@@ -125,13 +134,22 @@ class BoardItemDBO {
       ..sticker = sticker
       ..drawColor = drawColor;
 
-    List<double>? matrixData = matrix?.split(';').map((e) => double.parse(e))?.toList();
-    final mt = matrix != null
-        ? Matrix4.fromFloat64List(Float64List.fromList(matrixData!!))
-        : Matrix4.identity();
+    // convert string to Float64List
+    if (item.isImageItem || item.isTextItem || item.isStickerItem) {
+      List<double>? matrixData = matrix?.split(';').map((e) => double.parse(e))?.toList();
+      final mt = matrix != null
+          ? Matrix4.fromFloat64List(Float64List.fromList(matrixData!!))
+          : Matrix4.identity();
+      item.matrixNotifier = ValueNotifier(mt);
+    }
 
-    item.matrixNotifier = ValueNotifier(mt);
-    // item.drawPoints = drawPoints;
+    // convert string to List<Point>
+    if (drawPoints != null) {
+      List<dynamic> array = jsonDecode(drawPoints!);
+      final list = array.map((e) => draw.Point.fromJson(e)).toList();
+      item.drawPoints = list;
+    }
+
     return item;
   }
 
