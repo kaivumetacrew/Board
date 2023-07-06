@@ -61,7 +61,7 @@ class MatrixGestureDetector extends StatefulWidget {
   /// When set, it will be used for computing a "fixed" focal point
   /// aligned relative to the size of this widget.
   final Alignment? focalPointAlignment;
-
+  final double scale;
   final VoidCallback onScaleStart;
   final VoidCallback onScaleEnd;
 
@@ -70,6 +70,7 @@ class MatrixGestureDetector extends StatefulWidget {
     required this.onMatrixUpdate,
     required this.child,
     this.shouldTranslate = true,
+    this.scale = 1,
     this.shouldScale = true,
     this.shouldRotate = true,
     this.clipChild = true,
@@ -200,8 +201,8 @@ class MatrixGestureDetectorState extends State<MatrixGestureDetector> {
   }
 
   Matrix4 _translate(Offset translation) {
-    var dx = translation.dx;
-    var dy = translation.dy;
+    var dx = translation.dx * widget.scale;
+    var dy = translation.dy * widget.scale;
 
     //  ..[0]  = 1       # x scale
     //  ..[5]  = 1       # y scale

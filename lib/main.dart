@@ -15,7 +15,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    initHive();
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
@@ -50,10 +49,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-void initHive() {
+Future initHive() async {
   if (!hadInitHive) {
     hadInitHive = true;
-    Hive.initFlutter();
+    await Hive.initFlutter();
     Hive.registerAdapter(BoardDataDBOAdapter());
     Hive.registerAdapter(BoardItemDBOAdapter());
   }

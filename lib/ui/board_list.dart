@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:board/main.dart';
 import 'package:board/util/state.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -21,7 +22,10 @@ class _BoardListPageState extends State<BoardListPage> {
   @override
   void initState() {
     super.initState();
-    _getBoards();
+    () async {
+      await initHive();
+      _getBoards();
+    }.call();
   }
 
   @override

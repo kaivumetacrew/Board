@@ -213,6 +213,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
           child: BoardView(
             data: widget.board,
             controller: _boardController,
+            scale: _boardScale,
           ),
         ),
       ),

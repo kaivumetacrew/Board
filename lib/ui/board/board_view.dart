@@ -14,6 +14,7 @@ class BoardView extends StatefulWidget {
   static const double widthPx = 870; // 900 //dip  280
   static const double heightPx = 1160; // 1200
   static const double ratio = 3 / 4;
+  double scale = 1;
   BoardData data;
   BoardController controller;
 
@@ -21,6 +22,7 @@ class BoardView extends StatefulWidget {
     Key? key,
     required this.controller,
     required this.data,
+    required this.scale,
   }) : super(key: key);
 
   @override
@@ -138,6 +140,7 @@ class _BoardViewState extends State<BoardView> {
         width: double.infinity,
         height: double.infinity,
         child: MatrixGestureDetector(
+
           onScaleStart: () {},
           onScaleEnd: () {},
           onMatrixUpdate: _onMatrixUpdate,
