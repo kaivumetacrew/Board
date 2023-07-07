@@ -625,20 +625,6 @@
             </list>
           </value>
         </entry>
-        <entry key="position_sensors">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/position_sensors-0.0.3/lib" />
-            </list>
-          </value>
-        </entry>
-        <entry key="position_sensors_platform_interface">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/position_sensors_platform_interface-0.0.5/lib" />
-            </list>
-          </value>
-        </entry>
         <entry key="process">
           <value>
             <list>
@@ -965,8 +951,6 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pointycastle-3.7.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pool-1.5.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/position_sensors-0.0.3/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/position_sensors_platform_interface-0.0.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/process-4.2.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pub_semver-2.1.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pubspec_parse-1.2.3/lib" />

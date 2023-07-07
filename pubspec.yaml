@@ -49,7 +49,7 @@ dependencies:
   path_provider: ^2.0.15
   path: ^1.8.3
   sensors_plus: ^3.0.2
-  position_sensors: ^0.0.3
+  #position_sensors: ^0.0.3
   intl: any
   flutter_localizations:
     sdk: flutter

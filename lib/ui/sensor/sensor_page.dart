@@ -1,6 +1,5 @@
 import 'package:board/util/widget.dart';
 import 'package:flutter/material.dart';
-import 'package:position_sensors/position_sensors.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:math' as math;
 
@@ -74,9 +73,7 @@ class _SensorPageState extends State<SensorPage> {
       onError: showErrorDialog('magnetometer'),
       cancelOnError: true,
     );
-    PositionSensors.rotationEvents.listen((event) {
-      _rotateNotifier.value =   SensorValue(x: event.x, y: event.y, z: event.z);
-    });
+
   }
 
   @override

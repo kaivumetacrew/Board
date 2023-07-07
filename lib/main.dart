@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
         Locale('en'), // English
         Locale('ko'), // Spanish
       ],
-      home: const SensorPage(),
+      home:  BoardListPage(),
     );
   }
 }
