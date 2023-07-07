@@ -1,5 +1,6 @@
 import 'package:board/ui/board/board_db.dart';
 import 'package:board/ui/board_list.dart';
+import 'package:board/ui/sensor/sensor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
         Locale('en'), // English
         Locale('ko'), // Spanish
       ],
-      home: BoardListPage(),
+      home: const SensorPage(),
     );
   }
 }

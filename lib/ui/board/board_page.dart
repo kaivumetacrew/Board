@@ -37,7 +37,7 @@ class BoardPage extends StatefulWidget {
   State<BoardPage> createState() => BoardPageState();
 }
 
-class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
+class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, BoardWidget {
   double _boardFoldedDipWidth = 0;
   double _boardScale = 1;
   bool _isPortrait = true;
@@ -55,7 +55,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    lockPortrait();
+    setOnlyPortraitScreen();
     _boardController.onItemTap = (item) {
       if (item.isNone) {
         _boardController.deselectItem();

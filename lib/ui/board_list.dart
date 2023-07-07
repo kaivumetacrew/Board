@@ -70,7 +70,7 @@ class _BoardListPageState extends State<BoardListPage> {
           child: _boardItem(item),
           onTap: () {
             getData() async {
-              return item.getUiData();
+              return item.data();
             }
 
             getData().then((value) {

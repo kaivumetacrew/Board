@@ -37,20 +37,18 @@ class BoardDataDBO {
     this.thumbnail,
   });
 
-  static BoardDataDBO map(BoardData data) {
-    final dbo = BoardDataDBO(
+  factory BoardDataDBO.map(BoardData data) => BoardDataDBO(
         id: data.id,
         name: data.name,
         items: [],
         color: data.color,
-        image: data.image);
-    return dbo;
-  }
+        image: data.image,
+      );
 
-  Future<BoardData> getUiData() async {
+  Future<BoardData> data() async {
     var box = await Hive.openBox<BoardItemDBO>(id.toString());
     items = box.values.toList();
-    final boardItems = items?.map((e) => e.getUiItem()).toList(growable: true);
+    final boardItems = items?.map((e) => e.item()).toList(growable: true);
     final data = BoardData(
       id: id,
       name: name,
@@ -96,7 +94,7 @@ class BoardItemDBO {
 
   BoardItemDBO({required this.id});
 
-  static BoardItemDBO map(BoardItem item) {
+  factory BoardItemDBO.map(BoardItem item) {
     final data = BoardItemDBO(id: item.id)
       ..lastUpdate = item.lastUpdate
       ..text = item.text
@@ -123,7 +121,7 @@ class BoardItemDBO {
     return data;
   }
 
-  BoardItem getUiItem() {
+  BoardItem item() {
     final item = BoardItem(id: id)
       ..lastUpdate = lastUpdate
       ..text = text

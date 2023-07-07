@@ -17,14 +17,30 @@ void getWidgetInfo(GlobalKey globalKey) {
       'Position: ${(offset.dx + size.width) / 2}, ${(offset.dy + size.height) / 2}');
 }
 
-lockPortrait() {
+void setOnlyPortraitScreen() {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 }
 
-typedef void OnWidgetSizeChange(Size size);
+void setOnlyLandscapeScreen() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+}
+
+void enableScreenRotation() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+}
+
+typedef OnWidgetSizeChange = void Function(Size size);
 
 class WidgetSizeRenderObject extends RenderProxyBox {
   final OnWidgetSizeChange onSizeChange;
@@ -67,6 +83,8 @@ class WidgetSizeOffsetWrapper extends SingleChildRenderObjectWidget {
 }
 
 class WidgetSizeAndPositionExample extends StatefulWidget {
+  const WidgetSizeAndPositionExample({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _WidgetSizeAndPositionExampleState();

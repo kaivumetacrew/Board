@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:board/ui/board/board_page.dart';
 import 'package:board/util/color.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart' as img_picker;
 
 import '../board_text.dart';
 
-extension BoardPageExtension on BoardPageState {
+mixin BoardWidget <T extends StatefulWidget> on State<T> {
   double get imageButtonSize => 32;
 
   Widget imageButton({

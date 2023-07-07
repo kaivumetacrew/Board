@@ -33,6 +33,10 @@ extension StateExtension on State {
 
   Size get screenSize => MediaQuery.of(context).size;
 
+  Orientation get orientation => MediaQuery.of(context).orientation;
+
+  bool get isPortrait => orientation == Orientation.portrait;
+
   FlutterView get flutterView => View.of(context);
 
   double get screenWidthPx => flutterView.physicalSize.width;
