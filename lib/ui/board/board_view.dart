@@ -140,9 +140,9 @@ class _BoardViewState extends State<BoardView> {
         width: double.infinity,
         height: double.infinity,
         child: MatrixGestureDetector(
-
           onScaleStart: () {},
           onScaleEnd: () {},
+          scale: widget.scale,
           onMatrixUpdate: _onMatrixUpdate,
           child: ValueListenableBuilder(
             valueListenable: widget.controller,

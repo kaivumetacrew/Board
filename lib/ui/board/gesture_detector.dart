@@ -201,8 +201,8 @@ class MatrixGestureDetectorState extends State<MatrixGestureDetector> {
   }
 
   Matrix4 _translate(Offset translation) {
-    var dx = translation.dx * widget.scale;
-    var dy = translation.dy * widget.scale;
+    var dx = translation.dx / widget.scale;
+    var dy = translation.dy / widget.scale;
 
     //  ..[0]  = 1       # x scale
     //  ..[5]  = 1       # y scale
