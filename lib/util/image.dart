@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
@@ -15,4 +14,3 @@ Uint8List encodeImage(img.Image image) {
 Future<Uint8List> fileToBytes(XFile file) async {
   return Uint8List.fromList(await file.readAsBytes());
 }
-

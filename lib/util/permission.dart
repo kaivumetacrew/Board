@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 requestPermission(
-    Permission permission, {
-      required VoidCallback onGranted,
-      VoidCallback? onDenied,
-    }) async {
+  Permission permission, {
+  required VoidCallback onGranted,
+  VoidCallback? onDenied,
+}) async {
   await requestPermissions(
     [permission],
     onGranted: onGranted,
@@ -14,10 +14,10 @@ requestPermission(
 }
 
 requestPermissions(
-    List<Permission> permissions, {
-      required VoidCallback onGranted,
-      VoidCallback? onDenied,
-    }) async {
+  List<Permission> permissions, {
+  required VoidCallback onGranted,
+  VoidCallback? onDenied,
+}) async {
   List<Permission> deniedPermission = [];
   Map<Permission, PermissionStatus> statuses = await permissions.request();
   for (var element in permissions) {

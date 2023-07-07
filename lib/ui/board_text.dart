@@ -41,7 +41,7 @@ class _TextPageState extends State<TextPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset :false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text("Text")),
       body: Center(
         child: Column(

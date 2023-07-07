@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 Color fromHex(String hexString) {
@@ -37,5 +35,4 @@ class ColorRes {
   static const Color white = Color(0xFFFFFFFF);
   static const Color lightGray = Color(0xFFCECECE);
   static const Color text = Color(0xFF525252);
-
 }
