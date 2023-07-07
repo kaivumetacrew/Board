@@ -1,6 +1,7 @@
 import 'package:board/ui/board/board_db.dart';
 import 'package:board/ui/board_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/adapters.dart';
 
 bool hadInitHive = false;
@@ -44,6 +45,17 @@ class MyApp extends StatelessWidget {
           color: Colors.blue, //<-- SEE HERE
         ),
       ),
+      //localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: const [
+        //AppLocalizations.delegate, // Add this line
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('ko'), // Spanish
+      ],
       home: BoardListPage(),
     );
   }

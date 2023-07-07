@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:board/ui/widget/textfield.dart';
 import 'package:flutter/material.dart';
+
+import '../widget/textfield.dart';
 
 class TextPage extends StatefulWidget {
   TextPage({super.key, this.text, this.font});
