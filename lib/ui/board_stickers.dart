@@ -51,7 +51,7 @@ class _StickerPageState extends State<StickerPage> {
           onTap: () {
             setState(() {
               Navigator.pop(context, {
-                'sticker': item,
+                "sticker": item,
               });
             });
           },

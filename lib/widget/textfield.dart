@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class TextFieldOutline extends StatefulWidget {
+typedef TextCallback = Function(String);
+
+class AppTextField extends StatefulWidget {
   final TextEditingController controller;
   final TextInputType? textInputType;
-  final void Function(String)? onSubmit;
-  final void Function(String) onChange;
-  final String? Function(String?)? validator;
+
   final TextInputAction? textInputAction;
   final TextStyle? textStyle;
   final TextStyle? hintStyle;
@@ -27,12 +27,15 @@ class TextFieldOutline extends StatefulWidget {
   final EdgeInsetsGeometry margin;
   final EdgeInsetsGeometry padding;
   final Color fillColor;
-  final FocusNode focusNode;
+  FocusNode? focusNode;
   final VoidCallback? onSuffixIconClick;
   final VoidCallback? onPrefixIconClick;
   final List<TextInputFormatter>? inputFormatters;
+  TextCallback? validator;
+  TextCallback? onChange;
+  TextCallback? onSubmit;
 
-  const TextFieldOutline({
+  AppTextField({
     Key? key,
     this.textInputType,
     this.onSubmit,
@@ -60,20 +63,39 @@ class TextFieldOutline extends StatefulWidget {
     this.onSuffixIconClick,
     this.onPrefixIconClick,
     this.inputFormatters,
+    this.focusNode,
     required this.controller,
-    required this.focusNode,
-    required this.onChange,
-  }) : super(key: key);
+    this.onChange,
+  }) : super(key: key) {
+    //focusNode ??= FocusNode();
+  }
 
   @override
-  _TextFieldOutlineState createState() => _TextFieldOutlineState();
+  _AppTextFieldState createState() => _AppTextFieldState();
+
+  factory AppTextField.builder(TextEditingController controller) {
+    return AppTextField(
+      controller: controller,
+      focusNode: FocusNode(),
+      onChange: (s) {},
+    );
+  }
 }
 
-class _TextFieldOutlineState extends State<TextFieldOutline> {
+class _AppTextFieldState extends State<AppTextField> {
   var _hasError = false;
+
+  bool get hasFocus => widget.focusNode?.hasFocus ?? false;
+
+  String get text => widget.controller.text;
+
+  bool get iEmpty => text.isEmpty;
+
+  bool get isNotEmpty => text.isNotEmpty;
 
   @override
   void initState() {
+    widget.focusNode ??= FocusNode();
     widget.focusNode?.addListener(() {
       setState(() {});
     });
@@ -93,131 +115,138 @@ class _TextFieldOutlineState extends State<TextFieldOutline> {
       height: realHeight,
       child: Padding(
         padding: widget.margin,
-        child: TextFormField(
-          controller: widget.controller,
-          keyboardType: widget.textInputType ?? TextInputType.text,
-          onFieldSubmitted: widget.onSubmit,
-          onChanged: (text) {
+        child: textField(),
+      ),
+    );
+  }
+
+  Widget textField() {
+    return TextFormField(
+      controller: widget.controller,
+      keyboardType: widget.textInputType ?? TextInputType.text,
+      onFieldSubmitted: widget.onSubmit,
+      obscureText: widget.obscureText,
+      readOnly: widget.readOnly,
+      style: widget.textStyle ?? const TextStyle(fontSize: 16),
+      enabled: widget.enable,
+      textAlign: TextAlign.start,
+      textInputAction: widget.textInputAction,
+      autofocus: widget.autoFocus,
+      initialValue: widget.initialValue,
+      cursorColor: widget.focusBorderColor,
+      onTap: widget.onTap,
+      maxLength: widget.maxLength,
+      maxLines: widget.maxLines,
+      focusNode: widget.focusNode,
+      inputFormatters: widget.inputFormatters,
+      decoration: inputDecoration(),
+      onChanged: (s) {
+        setState(() {
+          widget.onChange?.call(s);
+        });
+      },
+      validator: (value) {
+        final s = value ?? "";
+        if (widget.validator != null) {
+          if (widget.validator!(s) != null) {
             setState(() {
-              widget.onChange(text);
+              _hasError = true;
             });
-          },
-          validator: (value) {
-            if (widget.validator != null) {
-              if (widget.validator!(value) != null) {
-                setState(() {
-                  _hasError = true;
-                });
-              } else {
-                setState(() {
-                  _hasError = false;
-                });
-              }
-            }
-            return widget.validator!(value);
-          },
-          obscureText: widget.obscureText,
-          readOnly: widget.readOnly,
-          style: widget.textStyle ?? const TextStyle(fontSize: 16),
-          enabled: widget.enable,
-          textAlign: TextAlign.start,
-          textInputAction: widget.textInputAction,
-          autofocus: widget.autoFocus,
-          initialValue: widget.initialValue,
-          cursorColor: widget.focusBorderColor,
-          onTap: widget.onTap,
-          maxLength: widget.maxLength,
-          maxLines: widget.maxLines,
-          focusNode: widget.focusNode,
-          inputFormatters: widget.inputFormatters,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: widget.fillColor,
-            contentPadding: widget.padding,
-            focusColor: Colors.black,
-            counterText: "",
-            border: widget.controller.text.isNotEmpty
-                ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide(
-                      color: widget.focusBorderColor,
-                    ),
-                  )
-                : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide(
-                      color: widget.unFocusBorderColor,
-                    ),
-                  ),
-            focusedBorder: OutlineInputBorder(
+          } else {
+            setState(() {
+              _hasError = false;
+            });
+          }
+        }
+        return widget.validator!(s);
+      },
+    );
+  }
+
+  InputDecoration inputDecoration() {
+    return InputDecoration(
+      filled: true,
+      fillColor: widget.fillColor,
+      contentPadding: widget.padding,
+      focusColor: Colors.black,
+      counterText: "",
+      border: isNotEmpty
+          ? OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
-                color: _hasError ? Colors.red : widget.focusBorderColor,
+                color: widget.focusBorderColor,
+              ),
+            )
+          : OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide(
+                color: widget.unFocusBorderColor,
               ),
             ),
-            enabledBorder: widget.controller.text.isNotEmpty
-                ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide(
-                      color: widget.unFocusBorderColor,
-                    ),
-                  )
-                : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide(
-                      color: widget.unFocusBorderColor,
-                    ),
-                  ),
-            prefixIcon: widget.prefixIcon != null
-                ? GestureDetector(
-                    onTap: widget.onPrefixIconClick,
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                          child: SizedBox(
-                              child: Image.asset(
-                        widget.prefixIcon!,
-                        width: 24,
-                        height: 24,
-                        color: _hasError
-                            ? Colors.red
-                            : widget.focusNode.hasFocus ||
-                                    widget.controller.text.isNotEmpty
-                                ? widget.focusBorderColor
-                                : widget.unFocusBorderColor,
-                      ))),
-                    ),
-                  )
-                : null,
-            suffixIcon: widget.suffixIcon != null
-                ? GestureDetector(
-                    onTap: widget.onSuffixIconClick,
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Center(
-                          child: SizedBox(
-                              child: Image.asset(
-                        widget.suffixIcon!,
-                        width: 24,
-                        height: 24,
-                        color: _hasError
-                            ? Colors.red
-                            : widget.focusNode.hasFocus ||
-                                    widget.controller.text.isNotEmpty
-                                ? widget.focusBorderColor
-                                : widget.unFocusBorderColor,
-                      ))),
-                    ),
-                  )
-                : null,
-            hintText: widget.hintText,
-            hintStyle: widget.hintStyle ??
-                const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide(
+          color: _hasError ? Colors.red : widget.focusBorderColor,
         ),
       ),
+      enabledBorder: isNotEmpty
+          ? OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide(
+                color: widget.unFocusBorderColor,
+              ),
+            )
+          : OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: BorderSide(
+                color: widget.unFocusBorderColor,
+              ),
+            ),
+      prefixIcon: widget.prefixIcon != null
+          ? GestureDetector(
+              onTap: widget.onPrefixIconClick,
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: Center(
+                    child: SizedBox(
+                        child: Image.asset(
+                  widget.prefixIcon!,
+                  width: 24,
+                  height: 24,
+                  color: _hasError
+                      ? Colors.red
+                      : hasFocus || isNotEmpty
+                          ? widget.focusBorderColor
+                          : widget.unFocusBorderColor,
+                ))),
+              ),
+            )
+          : null,
+      suffixIcon: widget.suffixIcon != null
+          ? GestureDetector(
+              onTap: widget.onSuffixIconClick,
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: Center(
+                    child: SizedBox(
+                        child: Image.asset(
+                  widget.suffixIcon!,
+                  width: 24,
+                  height: 24,
+                  color: _hasError
+                      ? Colors.red
+                      : hasFocus || isNotEmpty
+                          ? widget.focusBorderColor
+                          : widget.unFocusBorderColor,
+                ))),
+              ),
+            )
+          : null,
+      hintText: widget.hintText,
+      hintStyle:
+          widget.hintStyle ?? const TextStyle(fontSize: 16, color: Colors.grey),
     );
   }
 }

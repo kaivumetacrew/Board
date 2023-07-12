@@ -1,6 +1,5 @@
 import 'package:board/ui/board/board_db.dart';
 import 'package:board/ui/board_list.dart';
-import 'package:board/ui/sensor/sensor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -17,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: "Flutter Demo",
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       theme: ThemeData(
@@ -36,8 +35,8 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('en'), // English
-        Locale('ko'), // Spanish
+        Locale("en"), // English
+        Locale("ko"), // Spanish
       ],
       home:  BoardListPage(),
     );

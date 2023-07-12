@@ -19,15 +19,15 @@ class _TextPageState extends State<TextPage> {
   final ScrollController fontListScrollCtrl = ScrollController();
   String? itemText;
   List<String> fontList = [
-    'BabasNeue',
-    'Fasthand',
-    'Inter',
-    'Lobster',
-    'Montserrat',
-    'NunitoSans',
-    'Pacifico',
-    'PlayfairDisplay',
-    'Roboto',
+    "BabasNeue",
+    "Fasthand",
+    "Inter",
+    "Lobster",
+    "Montserrat",
+    "NunitoSans",
+    "Pacifico",
+    "PlayfairDisplay",
+    "Roboto",
   ];
   String? _selectedFont;
 
@@ -70,7 +70,7 @@ class _TextPageState extends State<TextPage> {
   }
 
   Widget textField() {
-    return TextFieldOutline(
+    return AppTextField(
       controller: _textController,
       focusNode: _textFocusNode,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -167,17 +167,4 @@ class _TextPageState extends State<TextPage> {
     );
   }
 
-// Future<List<String>> getFontData() async {
-//   final manifestContent = await rootBundle.loadString('AssetManifest.json');
-//
-//   final Map<String, dynamic> manifestMap = json.decode(manifestContent);
-//   // >> To get paths you need these 2 lines
-//
-//   var list = manifestMap.keys
-//       .where((String key) => key.contains('fonts/'))
-//       .where((String key) => key.contains('.ttf'))
-//       .toList();
-//
-//   return list;
-// }
 }

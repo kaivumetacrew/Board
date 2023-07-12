@@ -15,7 +15,7 @@ class FileHelper {
       file.writeAsBytesSync(bytes);
       return thumbPath;
     } on Exception catch (_) {
-      return '';
+      return "";
     }
   }
 }
