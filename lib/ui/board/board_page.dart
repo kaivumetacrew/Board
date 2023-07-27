@@ -104,11 +104,13 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 50),
-            child: Center(
-              child: _boardView(),
-            ),
-          ),
+              padding: EdgeInsets.only(bottom: _actionBarController.size),
+              child: Container(
+                color: Colors.white,
+                child: Center(
+                  child: _boardView(),
+                ),
+              )),
           Align(
             alignment: Alignment.bottomCenter,
             child: _actionBar(),
