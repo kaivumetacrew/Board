@@ -1,13 +1,17 @@
 import 'package:board/ui/board/board_model.dart';
+import 'package:board/util/color.dart';
 import 'package:flutter/material.dart';
 
 class ActionBarController extends ValueNotifier<ActionItem> {
   List<ActionItem> items = [
+    ActionItem.backgroundItem,
     ActionItem.textItem,
     ActionItem.imageItem,
     ActionItem.stickerItem,
     ActionItem.drawItem
   ];
+
+  double size = 50;
 
   ActionBarController(ActionItem item) : super(item);
 
@@ -19,15 +23,13 @@ class ActionBarController extends ValueNotifier<ActionItem> {
 
 class ActionBar extends StatefulWidget {
   ActionBarController controller;
-  Axis axis;
   bool textVisible;
   bool iconVisible;
   Function(ActionItem item, bool isSelected) onItemTap;
 
   ActionBar({
     super.key,
-    this.axis = Axis.horizontal,
-    this.textVisible = true,
+    this.textVisible = false,
     this.iconVisible = true,
     required this.controller,
     required this.onItemTap,
@@ -47,7 +49,7 @@ class _ActionBarState extends State<ActionBar> {
       e.id = widgets.length + 1;
       widgets.add(_actionButton(e));
     }
-    double size = 70;
+    widget.controller.size = widget.textVisible ? 70 : 50;
     return ValueListenableBuilder(
       valueListenable: widget.controller,
       builder: (
@@ -56,9 +58,9 @@ class _ActionBarState extends State<ActionBar> {
         Widget? child,
       ) {
         return Container(
-          color: Colors.white,
-          width: widget.axis == Axis.horizontal ? double.infinity : size,
-          height: widget.axis == Axis.horizontal ? size : double.infinity,
+          color: ColorRes.primary,
+          width: double.infinity,
+          height: widget.controller.size,
           child: _buttonContainer(widgets),
         );
       },
@@ -66,15 +68,13 @@ class _ActionBarState extends State<ActionBar> {
   }
 
   Widget _buttonContainer(List<Widget> children) {
-    if (widget.axis == Axis.horizontal) {
-      return Row(children: children);
-    }
-    return Column(children: children);
+    return Row(children: children);
   }
 
   Widget _actionButton(ActionItem item) {
-    Color iconColor =
-        (item.selectable && selectedAction == item) ? Colors.blue : Colors.grey;
+    Color iconColor = (item.selectable && selectedAction == item)
+        ? Colors.white
+        : Colors.white60;
     List<Widget> components = [];
     if (widget.iconVisible) {
       components.add(IconButton(
@@ -133,6 +133,9 @@ class ActionItem {
   int get hashCode => id.hashCode;
 
   static ActionItem none = ActionItem(-1, Icons.abc, 'none');
+
+  static ActionItem backgroundItem =
+      ActionItem(1, Icons.image_outlined, 'background');
 
   static ActionItem textItem = ActionItem(1, Icons.abc, 'text');
 

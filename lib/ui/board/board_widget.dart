@@ -37,8 +37,7 @@ mixin BoardWidget <T extends StatefulWidget> on State<T> {
         ));
   }
 
-  Widget colorPickerWidget(
-      {bool isPortrait = false, required Function(String) onTap}) {
+  Widget colorPickerWidget(Function(String) onTap) {
     List<String> colorList = [
       '#FFFFFF',
       '#000000',
@@ -63,35 +62,29 @@ mixin BoardWidget <T extends StatefulWidget> on State<T> {
       '#757575',
       '#546E7A',
     ];
-
-    final row = 2;
+    const row = 2;
     final size = (imageButtonSize * row + row * 2);
+    var gridView = GridView.builder(
+        //just set this property
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(left: 0, right: 0),
+        itemCount: colorList.length,
+        itemBuilder: (context, index) {
+          final color = colorList[index];
+          return imageButton(
+              backgroundColor: fromHex(color),
+              onPressed: () {
+                onTap(color);
+              });
+        });
     return SizedBox(
-      width: isPortrait ? double.infinity : size,
-      height: isPortrait ? size : double.infinity,
-      child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-          ),
-          scrollDirection: isPortrait ? Axis.horizontal : Axis.vertical,
-          padding: const EdgeInsets.only(left: 0, right: 0),
-          itemCount: colorList.length,
-          itemBuilder: (context, index) {
-            final color = colorList[index];
-            return imageButton(
-                backgroundColor: fromHex(color),
-                onPressed: () {
-                  onTap(color);
-                });
-          }),
+      height: size,
+      child: gridView,
     );
-  }
-
-  Widget separator({Axis axis = Axis.vertical}) {
-    if (axis == Axis.vertical) {
-      return Container(width: double.infinity, height: 1, color: Colors.grey);
-    }
-    return Container(height: double.infinity, width: 1, color: Colors.grey);
   }
 
   Future<File?> pickImage() async {

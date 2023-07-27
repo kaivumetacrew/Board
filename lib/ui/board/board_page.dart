@@ -38,11 +38,8 @@ class BoardPage extends StatefulWidget {
 }
 
 class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, BoardWidget {
-  double _boardFoldedDipWidth = 0;
   double _boardScale = 1;
-  bool _isPortrait = true;
 
-  final GlobalKey _widgetKey = GlobalKey();
   ScreenshotController screenshotController = ScreenshotController();
 
   BoardController get _boardController => widget.boardController;
@@ -98,108 +95,50 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
           ),
         ],
       ),
-      body: SafeArea(child: _content()),
+      body: _contentBody(),
     );
   }
 
-  Widget _content() {
-    if (_isPortrait) {
-      return Column(
+  Widget _contentBody() {
+    return SafeArea(
+      child: Stack(
         children: [
-          _boardView(),
-          separator(axis: Axis.vertical),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(1),
-              child: Stack(
-                children: [
-                  _backgroundButton(),
-                  _dynamicToolWidget(),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 50),
+            child: Center(
+              child: _boardView(),
             ),
           ),
-          separator(axis: Axis.vertical),
-          _actionBar()
-        ],
-      );
-    }
-    return Column(
-      children: [
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _boardView(),
-              separator(axis: Axis.horizontal),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(1),
-                  child: Stack(
-                    children: [
-                      _backgroundButton(),
-                      _dynamicToolWidget(),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: _actionBar(),
           ),
-        ),
-        separator(axis: Axis.vertical),
-        _actionBar()
-      ],
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 50),
+              child: _dynamicToolWidget(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   void _updateScreenArgs() {
     Size screenSize = MediaQuery.of(context).size;
     double screenWidthDip = screenSize.width;
-    double minRatio = 10 / 16;
-    double screenRatio = screenSize.width / screenSize.height;
-    _isPortrait = minRatio > screenRatio;
-    if (_isPortrait) {
-      double boardWidthDip = pixelToDip(BoardView.widthPx);
-      _boardScale = screenWidthDip / boardWidthDip;
-    }
-  }
-
-  void _updateFoldScreenArgs(Size correctBoardSize) {
     double boardWidthDip = pixelToDip(BoardView.widthPx);
-    _boardFoldedDipWidth = correctBoardSize.height * BoardView.ratio;
-    _boardScale = _boardFoldedDipWidth / boardWidthDip;
+    _boardScale = screenWidthDip / boardWidthDip;
   }
 
   /// Transform BoardView to fit screen
   Widget _boardView() {
-    if (_isPortrait) {
-      // ui for portrait layout
-      _boardFoldedDipWidth = 0;
-      return Container(
-        width: screenSize.width,
-        height: screenSize.width / BoardView.ratio,
-        color: Colors.yellow,
-        child: _transformBoardView(),
-      );
-    }
-    // ui for fold layout
-    if (_boardFoldedDipWidth > 0) {
-      return Container(
-        width: _boardFoldedDipWidth,
-        height: _boardFoldedDipWidth / BoardView.ratio,
-        color: Colors.yellow,
-        child: _transformBoardView(),
-      );
-    }
-    return WidgetSizeOffsetWrapper(
-      onSizeChange: (Size size) {
-        if (_boardFoldedDipWidth == 0) {
-          setState(() {
-            _updateFoldScreenArgs(size);
-          });
-        }
-      },
-      child: Container(key: _widgetKey),
+    return Container(
+      width: screenSize.width,
+      height: screenSize.width / BoardView.ratio,
+      color: Colors.yellow,
+      child: _transformBoardView(),
     );
   }
 
@@ -245,11 +184,9 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
   }
 
   Widget _colorPickerWidget() {
-    return colorPickerWidget(
-        isPortrait: _isPortrait,
-        onTap: (color) {
-          _boardController.setColor(color);
-        });
+    return colorPickerWidget((color) {
+      _boardController.setColor(color);
+    });
   }
 
   Widget _dynamicToolWidget() {
@@ -274,20 +211,6 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
     );
   }
 
-  Widget _backgroundButton() {
-    return RowIfPortraitElseCol(
-      isPortrait: _isPortrait,
-      children: [
-        const Expanded(child: SizedBox()),
-        imageButton(
-            icon: Icons.aspect_ratio,
-            onPressed: () {
-              _pickBackground();
-            }),
-      ],
-    );
-  }
-
   Future<void> _pickBackground() async {
     Map<String, dynamic>? result =
         await push(BackgroundPage(), fullscreenDialog: true);
@@ -306,11 +229,12 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
 
   /// Text
   Widget _textToolWidget() {
-    return ColumnIfPortraitElseRow(
-      isPortrait: _isPortrait,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RowIfPortraitElseCol(
-          isPortrait: _isPortrait,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _removeButton(),
             imageButton(
@@ -370,11 +294,11 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
   }
 
   Widget _imageToolWidget() {
-    return ColumnIfPortraitElseRow(
-      isPortrait: _isPortrait,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RowIfPortraitElseCol(
-          isPortrait: _isPortrait,
+        Row(
           children: [
             _removeButton(),
             _bringToFrontButton(),
@@ -387,11 +311,11 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
 
   /// Draw
   Widget _drawToolWidget() {
-    return ColumnIfPortraitElseRow(
-      isPortrait: _isPortrait,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RowIfPortraitElseCol(
-          isPortrait: _isPortrait,
+        Row(
           children: [
             imageButton(
                 icon: Icons.undo,
@@ -410,6 +334,10 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
     return ActionBar(
       controller: _actionBarController,
       onItemTap: (item, isSelected) {
+        if (item == ActionItem.backgroundItem) {
+          _pickBackground();
+          return;
+        }
         if (item == ActionItem.textItem) {
           _pickText(BoardItem.none);
           return;
