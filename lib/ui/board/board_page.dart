@@ -130,8 +130,7 @@ class BoardPageState extends State<BoardPage> with TickerProviderStateMixin, Boa
   void _updateScreenArgs() {
     Size screenSize = MediaQuery.of(context).size;
     double screenWidthDip = screenSize.width;
-    double boardWidthDip = pixelToDip(BoardView.widthPx);
-    _boardScale = screenWidthDip / boardWidthDip;
+    _boardScale = screenWidthDip /  BoardView.widthDip;
   }
 
   /// Transform BoardView to fit screen

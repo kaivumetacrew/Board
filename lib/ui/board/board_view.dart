@@ -11,8 +11,11 @@ import 'board_model.dart';
 import 'gesture_detector.dart';
 
 class BoardView extends StatefulWidget {
-  static const double widthPx = 870; // 900 //dip  280
-  static const double heightPx = 1160; // 1200
+  static const double widthDip = 320; // 900 //dip  280
+  static const double heightDip = 426; // 1200
+
+
+
   static const double ratio = 3 / 4;
   double scale = 1;
   BoardData data;
@@ -30,8 +33,6 @@ class BoardView extends StatefulWidget {
 }
 
 class _BoardViewState extends State<BoardView> {
-  double _widthDip = 0;
-  double _heightDip = 0;
 
   BoardController get _controller => widget.controller;
 
@@ -48,7 +49,7 @@ class _BoardViewState extends State<BoardView> {
   @override
   void didUpdateWidget(covariant BoardView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _updateWidgetSize();
+
   }
 
   @override
@@ -58,11 +59,10 @@ class _BoardViewState extends State<BoardView> {
 
   @override
   Widget build(BuildContext context) {
-    _updateWidgetSize();
     return Container(
       color: Colors.black,
-      width: _widthDip,
-      height: _heightDip,
+      width: BoardView.widthDip,
+      height: BoardView.heightDip,
       child: Stack(
         children: [
           _boardBackgroundListener(),
@@ -73,12 +73,6 @@ class _BoardViewState extends State<BoardView> {
     );
   }
 
-  void _updateWidgetSize() {
-    FlutterView flutterView = View.of(context);
-    _widthDip = BoardView.widthPx / flutterView.devicePixelRatio;
-    _heightDip = _widthDip / BoardView.ratio;
-    debugPrint('BoardView dip size - width: $_widthDip - height: $_heightDip');
-  }
 
   /// Board item widgets
   List<Widget> get boardItemWidgets =>
@@ -171,8 +165,8 @@ class _BoardViewState extends State<BoardView> {
             top: 0,
             left: 0,
             child: DrawWidget(
-              width: _widthDip,
-              height: _heightDip,
+              width: BoardView.widthDip,
+              height: BoardView.heightDip,
               controller: _drawController,
             ),
           );
