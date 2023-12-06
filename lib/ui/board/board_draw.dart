@@ -9,9 +9,9 @@ import 'package:image/image.dart' as img;
 /// draw canvas. Controller is required, other parameters are optional.
 /// widget/canvas expands to maximum by default.
 /// this behaviour can be overridden using width and/or height parameters.
-class DrawWidget extends StatefulWidget {
+class DrawView extends StatefulWidget {
   /// constructor
-  const DrawWidget({
+  const DrawView({
     required this.controller,
     Key? key,
     this.backgroundColor = Colors.transparent,
@@ -36,11 +36,11 @@ class DrawWidget extends StatefulWidget {
   final bool dynamicPressureSupported;
 
   @override
-  State createState() => DrawState();
+  State createState() => DrawViewState();
 }
 
 /// draw widget state
-class DrawState extends State<DrawWidget> {
+class DrawViewState extends State<DrawView> {
   /// Helper variable indicating that user has left the canvas so we can prevent linking next point
   /// with straight line.
   bool _isOutsideDrawField = false;
@@ -137,7 +137,7 @@ class DrawState extends State<DrawWidget> {
   }
 
   @override
-  void didUpdateWidget(covariant DrawWidget oldWidget) {
+  void didUpdateWidget(covariant DrawView oldWidget) {
     super.didUpdateWidget(oldWidget);
     _updateWidgetSize();
   }
@@ -707,7 +707,7 @@ class _SampleDrawPageState extends State<SampleDrawPage> {
       body: SafeArea(
           child: AspectRatio(
         aspectRatio: 3 / 4,
-        child: DrawWidget(
+        child: DrawView(
           key: const Key('draw'),
           height: screenSize.width / 3 * 4,
           controller: _controller,

@@ -164,7 +164,7 @@ class _BoardViewState extends State<BoardView> {
           return Positioned(
             top: 0,
             left: 0,
-            child: DrawWidget(
+            child: DrawView(
               width: BoardView.widthDip,
               height: BoardView.heightDip,
               controller: _drawController,

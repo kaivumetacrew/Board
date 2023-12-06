@@ -30,7 +30,7 @@ MaterialColor createMaterialColor(int value) {
 
 class ColorRes {
   ColorRes._();
-
+  static const Color temp = Color(0xFF508C33);
   static const Color primary = Color(0xFF338EFF);
   static const Color white = Color(0xFFFFFFFF);
   static const Color lightGray = Color(0xFFCECECE);
